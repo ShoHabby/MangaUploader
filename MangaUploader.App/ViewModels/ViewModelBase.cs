@@ -1,5 +1,8 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace MangaUploader.App.ViewModels;
+namespace MangaUploader.ViewModels;
 
-public class ViewModelBase : ObservableObject { }
+/// <summary>
+/// ViewModel base class
+/// </summary>
+public class ViewModelBase : ObservableObject;

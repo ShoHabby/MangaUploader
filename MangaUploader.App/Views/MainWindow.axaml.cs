@@ -1,11 +1,8 @@
 using Avalonia.Controls;
 
-namespace MangaUploader.App.Views;
+namespace MangaUploader.Views;
 
 public partial class MainWindow : Window
 {
-    public MainWindow()
-    {
-        InitializeComponent();
-    }
+    public MainWindow() => InitializeComponent();
 }
