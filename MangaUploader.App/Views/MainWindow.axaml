@@ -8,7 +8,7 @@
         x:CompileBindings="True"
         x:Class="MangaUploader.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
-        Icon="/Assets/avalonia-logo.ico"
+        Icon="/Assets/maribshohabby.ico"
         Title="Manga Uploader">
 
     <Design.DataContext>
