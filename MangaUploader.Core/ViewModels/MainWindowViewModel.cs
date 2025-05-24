@@ -1,4 +1,4 @@
-﻿namespace MangaUploader.ViewModels;
+﻿namespace MangaUploader.Core.ViewModels;
 
 /// <summary>
 /// Main window ViewModel

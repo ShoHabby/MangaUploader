@@ -2,6 +2,8 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MangaUploader.App", "MangaUploader.App\MangaUploader.App.csproj", "{4257F5CE-576A-4CB0-BA57-DEDE8C15A4BE}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MangaUploader.Core", "MangaUploader.Core\MangaUploader.Core.csproj", "{4470EC43-4034-4917-87D0-3DEB630563A7}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +14,9 @@ Global
 		{4257F5CE-576A-4CB0-BA57-DEDE8C15A4BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4257F5CE-576A-4CB0-BA57-DEDE8C15A4BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4257F5CE-576A-4CB0-BA57-DEDE8C15A4BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4470EC43-4034-4917-87D0-3DEB630563A7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4470EC43-4034-4917-87D0-3DEB630563A7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4470EC43-4034-4917-87D0-3DEB630563A7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4470EC43-4034-4917-87D0-3DEB630563A7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

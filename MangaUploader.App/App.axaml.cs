@@ -6,7 +6,7 @@ using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using HanumanInstitute.MvvmDialogs;
 using HanumanInstitute.MvvmDialogs.Avalonia;
-using MangaUploader.ViewModels;
+using MangaUploader.Core.ViewModels;
 using MangaUploader.Views;
 using Microsoft.Extensions.DependencyInjection;
 

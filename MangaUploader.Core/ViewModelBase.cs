@@ -1,6 +1,6 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 
-namespace MangaUploader.ViewModels;
+namespace MangaUploader.Core;
 
 /// <summary>
 /// ViewModel base class

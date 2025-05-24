@@ -1,5 +1,5 @@
 using HanumanInstitute.MvvmDialogs.Avalonia;
-using MangaUploader.ViewModels;
+using MangaUploader.Core.ViewModels;
 using MangaUploader.Views;
 
 namespace MangaUploader;
