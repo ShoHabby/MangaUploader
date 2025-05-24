@@ -1,20 +1,13 @@
-using System;
-using Avalonia.Controls;
-using Avalonia.Controls.Templates;
+using HanumanInstitute.MvvmDialogs.Avalonia;
 using MangaUploader.ViewModels;
+using MangaUploader.Views;
 
 namespace MangaUploader;
 
-public class ViewLocator : IDataTemplate
+/// <summary>
+/// ViewModel locator
+/// </summary>
+public class ViewLocator : StrongViewLocator
 {
-    public Control? Build(object? param)
-    {
-        if (param is null) return null;
-
-        string name = param.GetType().FullName!.Replace("ViewModel", "View", StringComparison.Ordinal);
-        Type? type = Type.GetType(name);
-        return type is not null ? (Control)Activator.CreateInstance(type)! : new TextBlock { Text = "Not Found: " + name };
-    }
-
-    public bool Match(object? data) => data is ViewModelBase;
+    public ViewLocator() => Register<MainWindowViewModel, MainWindow>();
 }
