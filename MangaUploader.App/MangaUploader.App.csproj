@@ -47,6 +47,7 @@
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1"/>
         <PackageReference Include="HanumanInstitute.MvvmDialogs" Version="2.1.0" />
         <PackageReference Include="HanumanInstitute.MvvmDialogs.Avalonia" Version="2.1.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.5" />
     </ItemGroup>
 
     <ItemGroup>

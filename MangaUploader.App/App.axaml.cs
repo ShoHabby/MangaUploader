@@ -4,8 +4,11 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
+using HanumanInstitute.MvvmDialogs;
+using HanumanInstitute.MvvmDialogs.Avalonia;
 using MangaUploader.ViewModels;
 using MangaUploader.Views;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MangaUploader;
 
@@ -28,9 +31,23 @@ public class App : Application
         // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
         DisableAvaloniaDataAnnotationValidation();
 
+        //Generate Dialog service
+        ServiceCollection services = new();
+        services.AddSingleton<IDialogService, DialogService>(provider =>
+        {
+            IViewLocator locator = new ViewLocator();
+            IDialogFactory dialogFactory = new DialogFactory();
+            return new DialogService(new DialogManager(locator, dialogFactory), provider.GetRequiredService);
+        });
+
+        // Add VM transients
+        services.AddTransient<MainWindowViewModel>();
+
+        // Start and inject
+        ServiceProvider provider = services.BuildServiceProvider();
         desktop.MainWindow = new MainWindow
         {
-            DataContext = new MainWindowViewModel(),
+            DataContext = provider.GetRequiredService<MainWindowViewModel>()
         };
 
         base.OnFrameworkInitializationCompleted();
