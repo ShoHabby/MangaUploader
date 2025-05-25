@@ -5,7 +5,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Xaml.Interactivity;
 
-namespace MangaUploader.Behaviours;
+namespace MangaUploader.Core.Behaviours;
 
 /// <summary>
 /// Behaviour that restricts the AutoCompleteBox to only select items from it's dropdown menu
@@ -56,11 +56,7 @@ public class DropdownItemsOnlyBehaviour : Behavior<AutoCompleteBox>
         if (this.AssociatedObject.IsDropDownOpen) return;
 
         // We *must* set the field and not the property as we need to avoid the changed event being raised (which prevents the dropdown opening).
-        if (!this.AssociatedObject._ignorePropertyChange)
-        {
-            this.AssociatedObject._ignorePropertyChange = true;
-        }
-
+        this.AssociatedObject._ignorePropertyChange = true;
         this.AssociatedObject.SetCurrentValue(AutoCompleteBox.IsDropDownOpenProperty, true);
     }
     #endregion

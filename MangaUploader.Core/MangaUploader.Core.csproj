@@ -21,6 +21,17 @@
       <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
       <PackageReference Include="HanumanInstitute.MvvmDialogs" Version="2.1.0" />
       <PackageReference Include="JetBrains.Annotations" Version="2024.3.0" />
+      <PackageReference Include="Krafs.Publicizer" Version="2.3.0">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      </PackageReference>
+      <PackageReference Include="Xaml.Behaviors.Interactivity" Version="11.3.0.7" />
     </ItemGroup>
-
+    
+    <ItemGroup>
+        <Publicize Include="Avalonia.Controls:Avalonia.Controls.AutoCompleteBox.PopulateDropDown" />
+        <Publicize Include="Avalonia.Controls:Avalonia.Controls.AutoCompleteBox.OpeningDropDown" />
+        <Publicize Include="Avalonia.Controls:Avalonia.Controls.AutoCompleteBox._ignorePropertyChange" />
+        <Publicize Include="Avalonia.Controls:Avalonia.Controls.AutoCompleteBox.TextBox" />
+    </ItemGroup>
 </Project>

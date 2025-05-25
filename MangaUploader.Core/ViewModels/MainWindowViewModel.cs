@@ -162,7 +162,7 @@ public partial class MainWindowViewModel : ViewModelBase
     /// <summary>
     /// Authentication completed event handler
     /// </summary>
-    private void OnAuthenticationCompleted(in IGitHubService.UserInfo user)
+    private void OnAuthenticationCompleted(in UserInfo user)
     {
         this.Username       = user.Login;
         this.AvatarURL      = user.AvatarURL;
