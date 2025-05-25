@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Avalonia;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using JetBrains.Annotations;
@@ -13,6 +14,26 @@ namespace MangaUploader.Core.ViewModels;
 /// </summary>
 public partial class MainWindowViewModel : ViewModelBase
 {
+    #region Constants
+    /// <summary>
+    /// Default avatar file
+    /// </summary>
+    private const string DEFAULT_AVATAR = "/Assets/maribshohabby.ico";
+    /// <summary>
+    /// Default username
+    /// </summary>
+    private const string DEFAULT_NAME = "Please log in...";
+
+    /// <summary>
+    /// Avatar picture size
+    /// </summary>
+    public static double AvatarSize => 32d;
+    /// <summary>
+    /// Avatar frame size
+    /// </summary>
+    public static CornerRadius AvatarCornerRadius => new(AvatarSize);
+    #endregion
+
     #region DI Properties
     /// <summary>
     /// Current GitHub Service
@@ -22,10 +43,19 @@ public partial class MainWindowViewModel : ViewModelBase
 
     #region Observable Properties
     /// <summary>
-    /// Current GitHub authentication status
+    /// User's avatar URL
     /// </summary>
     [ObservableProperty]
-    public partial string AuthenticationStatus { get; set; } = "Not Authenticated";
+    public partial string AvatarURL { get; set; } = DEFAULT_AVATAR;
+    /// <summary>
+    /// GitHub username
+    /// </summary>
+    [ObservableProperty]
+    public partial string Username { get; set; } = DEFAULT_NAME;
+    /// <summary>
+    /// Connect button text
+    /// </summary>
+    public string ConnectButtonText => this.GitHubService?.IsAuthenticated ?? false ? "Logout" : "Login";
     /// <summary>
     /// Current device flow code
     /// </summary>
@@ -43,16 +73,17 @@ public partial class MainWindowViewModel : ViewModelBase
     /// DI Constructor
     /// </summary>
     /// <param name="gitHubService">Current GitHub Service</param>
-    [UsedImplicitly(Reason = "DI Constructor")]
+    [UsedImplicitly(ImplicitUseKindFlags.InstantiatedWithFixedConstructorSignature, Reason = "DI Constructor")]
     public MainWindowViewModel(IGitHubService? gitHubService)
     {
         if (gitHubService is null) return;
 
-        this.GitHubService =  gitHubService;
+        this.GitHubService                           =  gitHubService;
         this.GitHubService.OnDeviceFlowCodeAvailable += OnDeviceFlowCodeAvailable;
+        this.GitHubService.OnAuthenticationFailed    += OnAuthenticationFailed;
         this.GitHubService.OnAuthenticationCompleted += OnAuthenticationCompleted;
 
-        Connect().Forget();
+        this.ConnectCommand.ExecuteAsync(null).Forget();
     }
 
     /// <summary>
@@ -72,10 +103,19 @@ public partial class MainWindowViewModel : ViewModelBase
     /// <summary>
     /// Connects to the GitHub Service
     /// </summary>
-    [RelayCommand]
+    [RelayCommand(AllowConcurrentExecutions = false)]
     private async Task Connect()
     {
-        if (this.GitHubService is not null)
+        if (this.GitHubService is null) return;
+
+        if (this.GitHubService.IsAuthenticated)
+        {
+            this.GitHubService.Disconnect();
+            this.AvatarURL = DEFAULT_AVATAR;
+            this.Username  = DEFAULT_NAME;
+            OnPropertyChanged(nameof(this.ConnectButtonText));
+        }
+        else
         {
             await this.GitHubService.Connect();
         }
@@ -88,15 +128,27 @@ public partial class MainWindowViewModel : ViewModelBase
     /// </summary>
     /// <param name="userCode">Current device flow code</param>
     /// <param name="validFor">How long the code is valid for</param>
-    private void OnDeviceFlowCodeAvailable(string userCode, TimeSpan validFor) => this.DeviceFlowCode = userCode;
+    private void OnDeviceFlowCodeAvailable(string userCode, TimeSpan validFor)
+    {
+        this.DeviceFlowCode = userCode;
+        this.GitHubService!.CopyDeviceCodeToClipboard().Forget();
+    }
+
+    /// <summary>
+    /// Authentication failed event handler
+    /// </summary>
+    private void OnAuthenticationFailed() => this.DeviceFlowCode = string.Empty;
 
     /// <summary>
     /// Authentication completed event handler
     /// </summary>
     private void OnAuthenticationCompleted(in IGitHubService.UserData user)
     {
-        this.DeviceFlowCode       = string.Empty;
-        this.AuthenticationStatus = $"Authenticated as {user.Login}!";
+        this.Username       = user.Login;
+        this.AvatarURL      = user.AvatarURL;
+        this.DeviceFlowCode = string.Empty;
+
+        OnPropertyChanged(nameof(this.ConnectButtonText));
     }
     #endregion
 }

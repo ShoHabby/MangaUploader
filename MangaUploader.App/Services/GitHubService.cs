@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.IO;
 using System.Threading.Tasks;
+using Avalonia.Media;
+using Avalonia.Media.Imaging;
 using GitCredentialManager;
 using MangaUploader.Core.Extensions.Collections;
 using MangaUploader.Core.Extensions.Logging;
@@ -33,11 +37,11 @@ public class GitHubService : IGitHubService
     /// <summary>
     /// Application scopes
     /// </summary>
-    private static readonly ImmutableArray<string> AppScopes = ["public_repo", "gist"];
+    private static readonly ImmutableArray<string> AppScopes = ["public_repo"];
     #endregion
 
     #region Fields
-    private string? deviceFlowCode;
+    private string deviceFlowCode = string.Empty;
     #endregion
 
     #region Properties
@@ -54,15 +58,23 @@ public class GitHubService : IGitHubService
     #region Events
     /// <inheritdoc />
     public event DeviceFlowCodeDelegate? OnDeviceFlowCodeAvailable;
-
+    /// <inheritdoc />
+    public event AuthenticationFailedDelegate? OnAuthenticationFailed;
     /// <inheritdoc />
     public event AuthenticationCompletedDelegate? OnAuthenticationCompleted;
+    #endregion
+
+    #region Properties
+    /// <inheritdoc />
+    public bool IsAuthenticated { get; private set; }
     #endregion
 
     #region Methods
     /// <inheritdoc />
     public async Task Connect()
     {
+        if (this.IsAuthenticated) return;
+
         // Try and get credentials from vault
         ICredential? credentials = this.Vault.Get(SERVICE, PRODUCT);
         if (credentials is null)
@@ -70,23 +82,36 @@ public class GitHubService : IGitHubService
             // If it fails, request them through Device Flow
             credentials = await RequestAccessToken();
             // If that still fails, quit out
-            if (credentials is null) return;
+            if (credentials is null)
+            {
+                OnAuthenticationFailed?.Invoke();
+                return;
+            }
         }
 
         // Test authentication with client
         User? user = await TestAuthentication(credentials);
         if (user is null)
         {
-            // If it fails, request a new access token
+            // If it fails, the token may have expired, request a new access token
             credentials = await RequestAccessToken();
             // If that fails, or if the connection test fails again, quit out
-            if (credentials is null) return;
+            if (credentials is null)
+            {
+                OnAuthenticationFailed?.Invoke();
+                return;
+            }
 
             user = await TestAuthentication(credentials);
-            if (user is null) return;
+            if (user is null)
+            {
+                OnAuthenticationFailed?.Invoke();
+                return;
+            }
         }
 
         // Authentication completed, notify of such
+        this.IsAuthenticated = true;
         OnAuthenticationCompleted?.Invoke(new UserData(user.Login, user.Email, user.AvatarUrl));
     }
 
@@ -108,6 +133,7 @@ public class GitHubService : IGitHubService
 
         // Wait for user to approve app connection
         OauthToken token = await this.Client.Oauth.CreateAccessTokenForDeviceFlow(CLIENT_ID, response);
+        this.deviceFlowCode = string.Empty;
 
         // If failed, dump error and exit
         if (string.IsNullOrEmpty(token.AccessToken))
@@ -142,6 +168,14 @@ public class GitHubService : IGitHubService
             await e.LogExceptionAsync();
             return null;
         }
+    }
+
+    /// <inheritdoc />
+    public void Disconnect()
+    {
+        this.Client.Credentials = Credentials.Anonymous;
+        this.Vault.Remove(SERVICE, PRODUCT);
+        this.IsAuthenticated = false;
     }
 
     /// <inheritdoc />

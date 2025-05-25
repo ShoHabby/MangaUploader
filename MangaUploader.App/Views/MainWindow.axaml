@@ -2,9 +2,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:ail="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
         xmlns:vm="clr-namespace:MangaUploader.Core.ViewModels;assembly=MangaUploader.Core"
         mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="800"
-        MinWidth="300" MinHeight="400" Padding="2"
+        MinWidth="300" MinHeight="400" Padding="10"
         x:CompileBindings="True"
         x:Class="MangaUploader.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
@@ -15,10 +16,18 @@
         <vm:MainWindowViewModel />
     </Design.DataContext>
 
-    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="25">
-        <Button Content="Connect" Command="{Binding ConnectCommand}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-        <TextBlock Text="{Binding AuthenticationStatus}"/>
-        <TextBlock Text="{Binding DeviceFlowCode}"/>
-    </StackPanel>
+    <DockPanel LastChildFill="False">
+        <DockPanel DockPanel.Dock="Top" HorizontalSpacing="10">
+            <Border DockPanel.Dock="Left" ClipToBounds="True" CornerRadius="{Binding AvatarCornerRadius}">
+                <ail:AdvancedImage Source="{Binding AvatarURL}" Width="{Binding AvatarSize}" Height="{Binding AvatarSize}" />
+            </Border>
+            <TextBlock DockPanel.Dock="Left" Text="{Binding Username}" VerticalAlignment="Center" />
+            <Button DockPanel.Dock="Right" Command="{Binding ConnectCommand}"
+                    Content="{Binding ConnectButtonText}" HorizontalContentAlignment="Center"
+                    Width="80" HorizontalAlignment="Center" VerticalAlignment="Center" />
+            <TextBlock DockPanel.Dock="Right" Text="{Binding DeviceFlowCode}"
+                       VerticalAlignment="Center" HorizontalAlignment="Right" />
+        </DockPanel>
+    </DockPanel>
 
 </Window>

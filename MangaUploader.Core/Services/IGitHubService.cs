@@ -24,6 +24,10 @@ public interface IGitHubService
     /// <param name="validFor">How long this device code will be valid for</param>
     public delegate void DeviceFlowCodeDelegate(string userCode, TimeSpan validFor);
     /// <summary>
+    /// User authentication failed delegate
+    /// </summary>
+    public delegate void AuthenticationFailedDelegate();
+    /// <summary>
     /// User authentication completed delegate
     /// </summary>
     /// <param name="user">The user that has just authenticated</param>
@@ -35,11 +39,21 @@ public interface IGitHubService
     /// Callback for device flow code available
     /// </summary>
     event DeviceFlowCodeDelegate? OnDeviceFlowCodeAvailable;
-
+    /// <summary>
+    /// Callback for GitHub authentication failed
+    /// </summary>
+    event AuthenticationFailedDelegate? OnAuthenticationFailed;
     /// <summary>
     /// Callback for GitHub authentication completed
     /// </summary>
     event AuthenticationCompletedDelegate? OnAuthenticationCompleted;
+    #endregion
+
+    #region Properties
+    /// <summary>
+    /// If the client is currently authenticated
+    /// </summary>
+    bool IsAuthenticated { get; }
     #endregion
 
     #region Methods
@@ -47,6 +61,11 @@ public interface IGitHubService
     /// Connect to GitHub client
     /// </summary>
     Task Connect();
+
+    /// <summary>
+    /// Disconnect from GitHub client
+    /// </summary>
+    void Disconnect();
 
     /// <summary>
     /// Copies the device flow code to the clipboard
