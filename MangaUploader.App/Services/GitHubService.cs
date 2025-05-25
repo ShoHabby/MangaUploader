@@ -2,10 +2,12 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using GitCredentialManager;
+using MangaUploader.Core.Extensions.Collections;
+using MangaUploader.Core.Extensions.Logging;
 using MangaUploader.Core.Services;
 using Octokit;
-using GitCredentialManager;
-using MangaUploader.Extensions.Collections;
+
 using DeviceFlowCodeDelegate = MangaUploader.Core.Services.IGitHubService.DeviceFlowCodeDelegate;
 
 namespace MangaUploader.Services;
@@ -32,11 +34,7 @@ public class GitHubService : IGitHubService
     /// <summary>
     /// Application scopes
     /// </summary>
-    private static readonly ImmutableArray<string> AppScopes =
-    [
-        "public_repo",
-        "gist"
-    ];
+    private static readonly ImmutableArray<string> AppScopes = ["public_repo", "gist"];
     #endregion
 
     #region Properties
@@ -110,7 +108,7 @@ public class GitHubService : IGitHubService
         // If failed, dump error and exit
         if (string.IsNullOrEmpty(token.AccessToken))
         {
-            await Console.Error.WriteLineAsync($"Could not get GitHub OAuth token.\n Error: {token.Error}");
+            await this.LogErrorAsync($"Could not get GitHub OAuth token.\n Error: {token.Error}");
             return null;
         }
 
@@ -130,14 +128,14 @@ public class GitHubService : IGitHubService
         try
         {
             User user = await this.Client.User.Current();
-            await Console.Out.WriteLineAsync($"Successfully authenticated to the GitHub Client as {user.Login}.");
+            await this.LogAsync($"Successfully authenticated to the GitHub Client as {user.Login}.");
             return true;
         }
         catch (Exception e)
         {
             this.Vault.Remove(SERVICE, PRODUCT);
-            await Console.Error.WriteLineAsync("Invalid credentials detected, deleting existing token...");
-            await Console.Error.WriteLineAsync($"[{e.GetType().Name}]: {e.Message}\n{e.StackTrace}");
+            await this.LogErrorAsync("Invalid credentials detected, deleting existing token...");
+            await e.LogExceptionAsync();
             return false;
         }
     }
