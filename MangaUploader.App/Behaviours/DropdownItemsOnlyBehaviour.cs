@@ -1,6 +1,5 @@
 ﻿using System;
 using System.ComponentModel;
-using System.Reflection;
 using Avalonia.Controls;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -13,17 +12,6 @@ namespace MangaUploader.Behaviours;
 /// </summary>
 public class DropdownItemsOnlyBehaviour : Behavior<AutoCompleteBox>
 {
-    #region Constants
-    /// <summary>
-    /// Reflection binding flags
-    /// </summary>
-    private const BindingFlags FLAGS = BindingFlags.NonPublic | BindingFlags.Instance;
-    /// <summary>
-    /// AutoCompleteBox type
-    /// </summary>
-    private static readonly Type AutoCompleteBoxType = typeof(AutoCompleteBox);
-    #endregion
-
     #region Overrides
     /// <inheritdoc />
     protected override void OnAttached()
@@ -62,17 +50,15 @@ public class DropdownItemsOnlyBehaviour : Behavior<AutoCompleteBox>
     {
         if (this.AssociatedObject is null or { IsDropDownOpen: true }) return;
 
-        AutoCompleteBoxType.GetMethod("PopulateDropDown", FLAGS)?.Invoke(this.AssociatedObject, [this.AssociatedObject, EventArgs.Empty]);
-        AutoCompleteBoxType.GetMethod("OpeningDropDown", FLAGS)?.Invoke(this.AssociatedObject, [false]);
+        this.AssociatedObject.PopulateDropDown(this.AssociatedObject, EventArgs.Empty);
+        this.AssociatedObject.OpeningDropDown(false);
 
         if (this.AssociatedObject.IsDropDownOpen) return;
 
         // We *must* set the field and not the property as we need to avoid the changed event being raised (which prevents the dropdown opening).
-        FieldInfo? ipc = AutoCompleteBoxType.GetField("_ignorePropertyChange", FLAGS);
-
-        if (ipc?.GetValue(this.AssociatedObject) is false)
+        if (!this.AssociatedObject._ignorePropertyChange)
         {
-            ipc.SetValue(this.AssociatedObject, true);
+            this.AssociatedObject._ignorePropertyChange = true;
         }
 
         this.AssociatedObject.SetCurrentValue(AutoCompleteBox.IsDropDownOpenProperty, true);
@@ -101,14 +87,12 @@ public class DropdownItemsOnlyBehaviour : Behavior<AutoCompleteBox>
     /// <param name="e">Event args</param>
     private void OnLostFocus(object? sender, RoutedEventArgs e)
     {
-        if (this.AssociatedObject is null or { Text: null } or { ItemsSource: null }) return;
+        if (this.AssociatedObject is null) return;
 
-        foreach (object item in this.AssociatedObject.ItemsSource)
+        if (this.AssociatedObject.SelectedItem is null)
         {
-            if (this.AssociatedObject.Text == item.ToString()) return;
+            this.AssociatedObject.SetValue(AutoCompleteBox.TextProperty, string.Empty);
         }
-
-        this.AssociatedObject.Text = string.Empty;
     }
 
     /// <summary>
@@ -118,9 +102,7 @@ public class DropdownItemsOnlyBehaviour : Behavior<AutoCompleteBox>
     /// <param name="e">Event args</param>
     private void OnDropDownOpening(object? sender, CancelEventArgs e)
     {
-        PropertyInfo? prop = this.AssociatedObject?.GetType().GetProperty("TextBox", FLAGS);
-        object? value = prop?.GetValue(this.AssociatedObject);
-        if (value is TextBox { IsReadOnly: true })
+        if (this.AssociatedObject?.TextBox?.IsReadOnly ?? false)
         {
             e.Cancel = true;
         }

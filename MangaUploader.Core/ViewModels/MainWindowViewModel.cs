@@ -64,8 +64,20 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     public partial string DeviceFlowCode { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Repositories that can be edited
+    /// </summary>
     [ObservableProperty]
     public partial ImmutableArray<RepositoryInfo> Repositories { get; set; } = ImmutableArray<RepositoryInfo>.Empty;
+    /// <summary>
+    /// Selected repository
+    /// </summary>
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(SelectedRepoName))]
+    public partial RepositoryInfo? SelectedRepository { get; set; }
+    /// <summary>
+    /// Selected repository name
+    /// </summary>
+    public string SelectedRepoName => this.SelectedRepository?.Name ?? string.Empty;
     #endregion
 
     #region Constructors

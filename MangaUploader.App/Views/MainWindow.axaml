@@ -33,11 +33,12 @@
         </DockPanel>
         <Label DockPanel.Dock="Top" Content="Repositories" Target="RepositoriesAutoCompleteBox" />
         <AutoCompleteBox DockPanel.Dock="Top" Name="RepositoriesAutoCompleteBox" ItemsSource="{Binding Repositories}"
-                         FilterMode="ContainsOrdinal">
+                         FilterMode="ContainsOrdinal" SelectedItem="{Binding SelectedRepository}">
             <i:Interaction.Behaviors>
                 <bh:DropdownItemsOnlyBehaviour/>
             </i:Interaction.Behaviors>
         </AutoCompleteBox>
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding SelectedRepoName}" />
     </DockPanel>
 
 </Window>
