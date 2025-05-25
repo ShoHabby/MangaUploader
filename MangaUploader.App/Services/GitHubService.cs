@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Immutable;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using GitCredentialManager;
 using MangaUploader.Core.Extensions.Collections;
@@ -8,8 +7,7 @@ using MangaUploader.Core.Extensions.Logging;
 using MangaUploader.Core.Services;
 using Octokit;
 
-using DeviceFlowCodeDelegate = MangaUploader.Core.Services.IGitHubService.DeviceFlowCodeDelegate;
-using AuthenticationCompletedDelegate = MangaUploader.Core.Services.IGitHubService.AuthenticationCompletedDelegate;
+using static MangaUploader.Core.Services.IGitHubService;
 
 namespace MangaUploader.Services;
 
@@ -36,6 +34,10 @@ public class GitHubService : IGitHubService
     /// Application scopes
     /// </summary>
     private static readonly ImmutableArray<string> AppScopes = ["public_repo", "gist"];
+    #endregion
+
+    #region Fields
+    private string? deviceFlowCode;
     #endregion
 
     #region Properties
@@ -85,7 +87,7 @@ public class GitHubService : IGitHubService
         }
 
         // Authentication completed, notify of such
-        OnAuthenticationCompleted?.Invoke(user);
+        OnAuthenticationCompleted?.Invoke(new UserData(user.Login, user.Email, user.AvatarUrl));
     }
 
     /// <summary>
@@ -100,12 +102,9 @@ public class GitHubService : IGitHubService
         OauthDeviceFlowResponse response = await this.Client.Oauth.InitiateDeviceFlow(request);
 
         // Broadcast user code then open browser
+        this.deviceFlowCode = response.UserCode;
         OnDeviceFlowCodeAvailable?.Invoke(response.UserCode, TimeSpan.FromSeconds(response.ExpiresIn));
-        Process.Start(new ProcessStartInfo
-        {
-            FileName        = response.VerificationUri,
-            UseShellExecute = true
-        });
+        await App.GetTopLevel().Launcher.LaunchUriAsync(new Uri(response.VerificationUri));
 
         // Wait for user to approve app connection
         OauthToken token = await this.Client.Oauth.CreateAccessTokenForDeviceFlow(CLIENT_ID, response);
@@ -143,6 +142,16 @@ public class GitHubService : IGitHubService
             await e.LogExceptionAsync();
             return null;
         }
+    }
+
+    /// <inheritdoc />
+    public async Task CopyDeviceCodeToClipboard()
+    {
+        // Make sure a valid device code exists
+        if (string.IsNullOrEmpty(this.deviceFlowCode)) return;
+
+        // Set the text in the clipboard
+        await App.GetTopLevel().Clipboard!.SetTextAsync(this.deviceFlowCode);
     }
     #endregion
 }

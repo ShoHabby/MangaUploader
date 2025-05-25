@@ -2,8 +2,9 @@
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using JetBrains.Annotations;
+using MangaUploader.Core.Extensions.Tasks;
 using MangaUploader.Core.Services;
-using Octokit;
 
 namespace MangaUploader.Core.ViewModels;
 
@@ -16,7 +17,7 @@ public partial class MainWindowViewModel : ViewModelBase
     /// <summary>
     /// Current GitHub Service
     /// </summary>
-    private IGitHubService GitHubService { get; }
+    private IGitHubService? GitHubService { get; }
     #endregion
 
     #region Observable Properties
@@ -36,17 +37,22 @@ public partial class MainWindowViewModel : ViewModelBase
     /// <summary>
     /// Default constructor for AppBuilder
     /// </summary>
-    public MainWindowViewModel() : this(null!) { }
+    public MainWindowViewModel() : this(null) { }
 
     /// <summary>
     /// DI Constructor
     /// </summary>
     /// <param name="gitHubService">Current GitHub Service</param>
-    public MainWindowViewModel(IGitHubService gitHubService)
+    [UsedImplicitly(Reason = "DI Constructor")]
+    public MainWindowViewModel(IGitHubService? gitHubService)
     {
+        if (gitHubService is null) return;
+
         this.GitHubService =  gitHubService;
         this.GitHubService.OnDeviceFlowCodeAvailable += OnDeviceFlowCodeAvailable;
         this.GitHubService.OnAuthenticationCompleted += OnAuthenticationCompleted;
+
+        Connect().Forget();
     }
 
     /// <summary>
@@ -54,6 +60,9 @@ public partial class MainWindowViewModel : ViewModelBase
     /// </summary>
     ~MainWindowViewModel()
     {
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        if (this.GitHubService is null) return;
+
         this.GitHubService.OnDeviceFlowCodeAvailable -= OnDeviceFlowCodeAvailable;
         this.GitHubService.OnAuthenticationCompleted -= OnAuthenticationCompleted;
     }
@@ -64,7 +73,13 @@ public partial class MainWindowViewModel : ViewModelBase
     /// Connects to the GitHub Service
     /// </summary>
     [RelayCommand]
-    private async Task Connect() => await this.GitHubService.Connect();
+    private async Task Connect()
+    {
+        if (this.GitHubService is not null)
+        {
+            await this.GitHubService.Connect();
+        }
+    }
     #endregion
 
     #region Event Listeners
@@ -78,7 +93,7 @@ public partial class MainWindowViewModel : ViewModelBase
     /// <summary>
     /// Authentication completed event handler
     /// </summary>
-    private void OnAuthenticationCompleted(User user)
+    private void OnAuthenticationCompleted(in IGitHubService.UserData user)
     {
         this.DeviceFlowCode       = string.Empty;
         this.AuthenticationStatus = $"Authenticated as {user.Login}!";

@@ -1,9 +1,11 @@
 using System;
 using System.Linq;
 using Avalonia;
+using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
+using Avalonia.VisualTree;
 using HanumanInstitute.MvvmDialogs;
 using HanumanInstitute.MvvmDialogs.Avalonia;
 using MangaUploader.Core.Services;
@@ -19,6 +21,18 @@ namespace MangaUploader;
 /// </summary>
 public class App : Application
 {
+    /// <summary>
+    /// Gets the current top level application
+    /// </summary>
+    /// <returns>Top level app</returns>
+    /// <exception cref="InvalidOperationException">If the application lifetime does not allow getting a top level</exception>
+    public static TopLevel GetTopLevel() => Current!.ApplicationLifetime switch
+    {
+        IClassicDesktopStyleApplicationLifetime desktop => desktop.MainWindow!,
+        ISingleViewApplicationLifetime viewApp          => (TopLevel)viewApp.MainView!.GetVisualRoot()!,
+        _                                               => throw new InvalidOperationException("Current application lifetime does not support getting TopLevel")
+    };
+
     /// <inheritdoc />
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
