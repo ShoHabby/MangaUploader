@@ -1,4 +1,7 @@
-﻿namespace MangaUploader.Core.Services;
+﻿using System;
+using System.Threading.Tasks;
+
+namespace MangaUploader.Core.Services;
 
 /// <summary>
 /// GitHub service

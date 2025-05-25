@@ -2,13 +2,21 @@
 using System.Collections.Generic;
 
 // ReSharper disable once CheckNamespace
-namespace MangaUploader.Extensions.Collections;
+namespace MangaUploader.Core.Extensions.Collections;
 
 /// <summary>
 /// Collection extensions
 /// </summary>
 public static class CollectionExtensions
 {
+    /// <summary>
+    /// Checks if a collection is empty or not
+    /// </summary>
+    /// <param name="collection">Collection to check</param>
+    /// <typeparam name="T">Item type in the collection</typeparam>
+    /// <returns><see langword="true"/> if the collection is empty, otherwise <see langword="false"/></returns>
+    public static bool IsEmpty<T>(this ICollection<T> collection) => collection.Count == 0;
+
     /// <summary>
     /// Adds a set of item to a collection
     /// </summary>
