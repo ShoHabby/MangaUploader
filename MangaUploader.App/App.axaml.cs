@@ -6,7 +6,9 @@ using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using HanumanInstitute.MvvmDialogs;
 using HanumanInstitute.MvvmDialogs.Avalonia;
+using MangaUploader.Core.Services;
 using MangaUploader.Core.ViewModels;
+using MangaUploader.Services;
 using MangaUploader.Views;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,8 +19,10 @@ namespace MangaUploader;
 /// </summary>
 public class App : Application
 {
+    /// <inheritdoc />
     public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
+    /// <inheritdoc />
     public override void OnFrameworkInitializationCompleted()
     {
         if (this.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
@@ -27,8 +31,7 @@ public class App : Application
             return;
         }
 
-        // Avoid duplicate validations from both Avalonia and the CommunityToolkit.
-        // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
+        // Cleanup Avalonia plugins
         DisableAvaloniaDataAnnotationValidation();
 
         //Generate Dialog service
@@ -39,6 +42,9 @@ public class App : Application
             IDialogFactory dialogFactory = new DialogFactory();
             return new DialogService(new DialogManager(locator, dialogFactory), provider.GetRequiredService);
         });
+
+        // Add other services
+        services.AddSingleton<IGitHubService, GitHubService>();
 
         // Add VM transients
         services.AddTransient<MainWindowViewModel>();
@@ -53,6 +59,10 @@ public class App : Application
         base.OnFrameworkInitializationCompleted();
     }
 
+    /// <summary>
+    /// Avoid duplicate validations from both Avalonia and the CommunityToolkit.
+    /// </summary>
+    /// <remarks>More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins</remarks>
     private static void DisableAvaloniaDataAnnotationValidation()
     {
         // Get an array of plugins to remove

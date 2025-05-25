@@ -8,6 +8,9 @@ namespace MangaUploader.Views;
 /// </summary>
 public partial class MainWindow : Window
 {
+    /// <summary>
+    /// Window Initialization
+    /// </summary>
     public MainWindow() => InitializeComponent();
 
     /// <inheritdoc />
