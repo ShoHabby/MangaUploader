@@ -9,6 +9,7 @@ using MangaUploader.Core.Services;
 using Octokit;
 
 using DeviceFlowCodeDelegate = MangaUploader.Core.Services.IGitHubService.DeviceFlowCodeDelegate;
+using AuthenticationCompletedDelegate = MangaUploader.Core.Services.IGitHubService.AuthenticationCompletedDelegate;
 
 namespace MangaUploader.Services;
 
@@ -53,7 +54,7 @@ public class GitHubService : IGitHubService
     public event DeviceFlowCodeDelegate? OnDeviceFlowCodeAvailable;
 
     /// <inheritdoc />
-    public event Action? OnAuthenticationCompleted;
+    public event AuthenticationCompletedDelegate? OnAuthenticationCompleted;
     #endregion
 
     #region Methods
@@ -71,16 +72,20 @@ public class GitHubService : IGitHubService
         }
 
         // Test authentication with client
-        if (!await TestConnection(credentials))
+        User? user = await TestAuthentication(credentials);
+        if (user is null)
         {
             // If it fails, request a new access token
             credentials = await RequestAccessToken();
             // If that fails, or if the connection test fails again, quit out
-            if (credentials is null || !await TestConnection(credentials)) return;
+            if (credentials is null) return;
+
+            user = await TestAuthentication(credentials);
+            if (user is null) return;
         }
 
         // Authentication completed, notify of such
-        OnAuthenticationCompleted?.Invoke();
+        OnAuthenticationCompleted?.Invoke(user);
     }
 
     /// <summary>
@@ -122,21 +127,21 @@ public class GitHubService : IGitHubService
     /// </summary>
     /// <param name="credentials">Credentials to test for</param>
     /// <returns><see langword="true"/> if the GitHub connection is successful, otherwise <see langword="false"/></returns>
-    private async Task<bool> TestConnection(ICredential credentials)
+    private async Task<User?> TestAuthentication(ICredential credentials)
     {
         this.Client.Credentials = new Credentials(credentials.Password, AuthenticationType.Oauth);
         try
         {
             User user = await this.Client.User.Current();
             await this.LogAsync($"Successfully authenticated to the GitHub Client as {user.Login}.");
-            return true;
+            return user;
         }
         catch (Exception e)
         {
             this.Vault.Remove(SERVICE, PRODUCT);
             await this.LogErrorAsync("Invalid credentials detected, deleting existing token...");
             await e.LogExceptionAsync();
-            return false;
+            return null;
         }
     }
     #endregion

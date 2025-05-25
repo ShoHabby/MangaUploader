@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MangaUploader.Core.Services;
+using Octokit;
 
 namespace MangaUploader.Core.ViewModels;
 
@@ -77,10 +78,10 @@ public partial class MainWindowViewModel : ViewModelBase
     /// <summary>
     /// Authentication completed event handler
     /// </summary>
-    private void OnAuthenticationCompleted()
+    private void OnAuthenticationCompleted(User user)
     {
         this.DeviceFlowCode       = string.Empty;
-        this.AuthenticationStatus = "Authenticated!";
+        this.AuthenticationStatus = $"Authenticated as {user.Login}!";
     }
     #endregion
 }
