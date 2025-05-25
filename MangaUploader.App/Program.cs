@@ -1,8 +1,5 @@
 ﻿using System;
 using Avalonia;
-using Avalonia.Controls;
-using Avalonia.Controls.ApplicationLifetimes;
-using Avalonia.VisualTree;
 
 namespace MangaUploader;
 

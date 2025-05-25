@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.Threading.Tasks;
+using MangaUploader.Core.Models;
 
 namespace MangaUploader.Core.Services;
 
@@ -14,7 +16,7 @@ public interface IGitHubService
     /// <param name="Login">GitHub UserName</param>
     /// <param name="Email">GitHub primary email address</param>
     /// <param name="AvatarURL">GitHub avatar URL</param>
-    public readonly record struct UserData(string Login, string Email, string AvatarURL);
+    public readonly record struct UserInfo(string Login, string Email, string AvatarURL);
 
     #region Delegates
     /// <summary>
@@ -31,7 +33,11 @@ public interface IGitHubService
     /// User authentication completed delegate
     /// </summary>
     /// <param name="user">The user that has just authenticated</param>
-    public delegate void AuthenticationCompletedDelegate(in UserData user);
+    public delegate void AuthenticationCompletedDelegate(in UserInfo user);
+    /// <summary>
+    /// User's repositories fetched delegate
+    /// </summary>
+    public delegate void RepositoriesFetchedDelegate(ImmutableArray<RepositoryInfo> repositories);
     #endregion
 
     #region Events
@@ -47,6 +53,10 @@ public interface IGitHubService
     /// Callback for GitHub authentication completed
     /// </summary>
     event AuthenticationCompletedDelegate? OnAuthenticationCompleted;
+    /// <summary>
+    /// Callback for public repositories fetch completion
+    /// </summary>
+    event RepositoriesFetchedDelegate? OnRepositoriesFetched;
     #endregion
 
     #region Properties
@@ -63,13 +73,13 @@ public interface IGitHubService
     Task Connect();
 
     /// <summary>
-    /// Disconnect from GitHub client
-    /// </summary>
-    void Disconnect();
-
-    /// <summary>
     /// Copies the device flow code to the clipboard
     /// </summary>
     Task CopyDeviceCodeToClipboard();
+
+    /// <summary>
+    /// Disconnect from GitHub client
+    /// </summary>
+    void Disconnect();
     #endregion
 }

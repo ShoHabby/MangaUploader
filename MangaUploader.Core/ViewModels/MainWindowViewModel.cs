@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Avalonia;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using JetBrains.Annotations;
 using MangaUploader.Core.Extensions.Tasks;
+using MangaUploader.Core.Models;
 using MangaUploader.Core.Services;
 
 namespace MangaUploader.Core.ViewModels;
@@ -61,6 +63,9 @@ public partial class MainWindowViewModel : ViewModelBase
     /// </summary>
     [ObservableProperty]
     public partial string DeviceFlowCode { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial ImmutableArray<RepositoryInfo> Repositories { get; set; } = ImmutableArray<RepositoryInfo>.Empty;
     #endregion
 
     #region Constructors
@@ -82,6 +87,7 @@ public partial class MainWindowViewModel : ViewModelBase
         this.GitHubService.OnDeviceFlowCodeAvailable += OnDeviceFlowCodeAvailable;
         this.GitHubService.OnAuthenticationFailed    += OnAuthenticationFailed;
         this.GitHubService.OnAuthenticationCompleted += OnAuthenticationCompleted;
+        this.GitHubService.OnRepositoriesFetched     += OnRepositoriesFetched;
 
         this.ConnectCommand.ExecuteAsync(null).Forget();
     }
@@ -95,7 +101,9 @@ public partial class MainWindowViewModel : ViewModelBase
         if (this.GitHubService is null) return;
 
         this.GitHubService.OnDeviceFlowCodeAvailable -= OnDeviceFlowCodeAvailable;
+        this.GitHubService.OnAuthenticationFailed    -= OnAuthenticationFailed;
         this.GitHubService.OnAuthenticationCompleted -= OnAuthenticationCompleted;
+        this.GitHubService.OnRepositoriesFetched     -= OnRepositoriesFetched;
     }
     #endregion
 
@@ -142,7 +150,7 @@ public partial class MainWindowViewModel : ViewModelBase
     /// <summary>
     /// Authentication completed event handler
     /// </summary>
-    private void OnAuthenticationCompleted(in IGitHubService.UserData user)
+    private void OnAuthenticationCompleted(in IGitHubService.UserInfo user)
     {
         this.Username       = user.Login;
         this.AvatarURL      = user.AvatarURL;
@@ -150,5 +158,11 @@ public partial class MainWindowViewModel : ViewModelBase
 
         OnPropertyChanged(nameof(this.ConnectButtonText));
     }
+
+    /// <summary>
+    /// Repositories fetched event handler
+    /// </summary>
+    /// <param name="repositories">The fetched repositories for the user</param>
+    private void OnRepositoriesFetched(ImmutableArray<RepositoryInfo> repositories) => this.Repositories = repositories;
     #endregion
 }

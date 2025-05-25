@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
-using Avalonia.Media;
-using Avalonia.Media.Imaging;
 using GitCredentialManager;
 using MangaUploader.Core.Extensions.Collections;
 using MangaUploader.Core.Extensions.Logging;
+using MangaUploader.Core.Models;
 using MangaUploader.Core.Services;
 using Octokit;
 
@@ -62,6 +61,8 @@ public class GitHubService : IGitHubService
     public event AuthenticationFailedDelegate? OnAuthenticationFailed;
     /// <inheritdoc />
     public event AuthenticationCompletedDelegate? OnAuthenticationCompleted;
+    /// <inheritdoc />
+    public event RepositoriesFetchedDelegate? OnRepositoriesFetched;
     #endregion
 
     #region Properties
@@ -112,7 +113,9 @@ public class GitHubService : IGitHubService
 
         // Authentication completed, notify of such
         this.IsAuthenticated = true;
-        OnAuthenticationCompleted?.Invoke(new UserData(user.Login, user.Email, user.AvatarUrl));
+        OnAuthenticationCompleted?.Invoke(new UserInfo(user.Login, user.Email, user.AvatarUrl));
+
+        await FetchPublicRepos();
     }
 
     /// <summary>
@@ -170,12 +173,20 @@ public class GitHubService : IGitHubService
         }
     }
 
-    /// <inheritdoc />
-    public void Disconnect()
+    /// <summary>
+    /// Fetches the user's public repos
+    /// </summary>
+    /// <returns>An array of public repos owned by the user</returns>
+    private async Task FetchPublicRepos()
     {
-        this.Client.Credentials = Credentials.Anonymous;
-        this.Vault.Remove(SERVICE, PRODUCT);
-        this.IsAuthenticated = false;
+        IReadOnlyList<Repository> repos = await this.Client.Repository.GetAllForCurrent();
+        ImmutableArray<RepositoryInfo>.Builder reposBuilder = ImmutableArray.CreateBuilder<RepositoryInfo>();
+        foreach (Repository repo in repos.Where(r => !r.Archived))
+        {
+            reposBuilder.Add(new RepositoryInfo(repo.FullName, repo.Id));
+        }
+
+        OnRepositoriesFetched?.Invoke(reposBuilder.ToImmutable());
     }
 
     /// <inheritdoc />
@@ -186,6 +197,14 @@ public class GitHubService : IGitHubService
 
         // Set the text in the clipboard
         await App.GetTopLevel().Clipboard!.SetTextAsync(this.deviceFlowCode);
+    }
+
+    /// <inheritdoc />
+    public void Disconnect()
+    {
+        this.Client.Credentials = Credentials.Anonymous;
+        this.Vault.Remove(SERVICE, PRODUCT);
+        this.IsAuthenticated = false;
     }
     #endregion
 }
