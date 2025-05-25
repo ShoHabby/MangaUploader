@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -69,7 +68,6 @@ public class GitHubService : IGitHubService
         {
             // If it fails, request them through Device Flow
             credentials = await RequestAccessToken();
-
             // If that still fails, quit out
             if (credentials is null) return;
         }
@@ -79,17 +77,8 @@ public class GitHubService : IGitHubService
         {
             // If it fails, request a new access token
             credentials = await RequestAccessToken();
-            // If that fails, quit out
-            if (credentials is null)
-            {
-                return;
-            }
-
-            // Test connection again, if it fails, quit out
-            if (!await TestConnection(credentials))
-            {
-                return;
-            }
+            // If that fails, or if the connection test fails again, quit out
+            if (credentials is null || !await TestConnection(credentials)) return;
         }
 
         // Authentication completed, notify of such
