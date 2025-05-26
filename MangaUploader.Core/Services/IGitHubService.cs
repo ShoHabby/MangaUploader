@@ -35,6 +35,12 @@ public interface IGitHubService
 
     #region Methods
     /// <summary>
+    /// Checks if the service has saved credentials
+    /// </summary>
+    /// <returns><see langword="true"/> if some credentials for the user are saved on the machine, otherwise <see langword="false"/></returns>
+    bool HasSavedCredentials();
+
+    /// <summary>
     /// Authenticates to the GitHub client
     /// </summary>
     /// <returns>The authenticated user info when successful, or <see langword="null"/> on failure</returns>

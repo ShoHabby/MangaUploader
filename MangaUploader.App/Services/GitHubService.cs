@@ -75,6 +75,9 @@ public class GitHubService : IGitHubService
 
     #region Methods
     /// <inheritdoc />
+    public bool HasSavedCredentials() => this.Vault.Get(SERVICE, PRODUCT) is not null;
+
+    /// <inheritdoc />
     public async Task<UserInfo?> Authenticate()
     {
         if (this.IsAuthenticated) return null;

@@ -18,19 +18,6 @@ public partial class MainWindowViewModel : ViewModelBase
 {
     #region Constants
     /// <summary>
-    /// Default avatar file
-    /// </summary>
-    private const string DEFAULT_AVATAR = "/Assets/maribshohabby.ico";
-    /// <summary>
-    /// Default username
-    /// </summary>
-    private const string DEFAULT_NAME = "Please log in...";
-    /// <summary>
-    /// Default user object
-    /// </summary>
-    private static readonly UserInfo DefaultUser = new(DEFAULT_NAME, string.Empty, DEFAULT_AVATAR);
-
-    /// <summary>
     /// Avatar picture size
     /// </summary>
     public static double AvatarSize => 32d;
@@ -56,7 +43,7 @@ public partial class MainWindowViewModel : ViewModelBase
     /// Currently authenticated user
     /// </summary>
     [ObservableProperty]
-    public partial UserInfo User { get; set; } = DefaultUser;
+    public partial UserInfo User { get; set; } = UserInfo.Default;
     /// <summary>
     /// Connect button text
     /// </summary>
@@ -96,14 +83,18 @@ public partial class MainWindowViewModel : ViewModelBase
     [UsedImplicitly(ImplicitUseKindFlags.InstantiatedWithFixedConstructorSignature)]
     public MainWindowViewModel(IGitHubService? gitHubService, IClipboardService? clipboardService)
     {
-        if (gitHubService is null) return;
-
-        this.GitHubService    = gitHubService;
         this.ClipboardService = clipboardService;
 
+        if (gitHubService is null) return;
+
+        this.GitHubService = gitHubService;
         this.GitHubService.OnDeviceFlowCodeAvailable += OnDeviceFlowCodeAvailable;
 
-        this.ConnectCommand.ExecuteAsync(null).Forget();
+        // If some credentials are saved, try connecting
+        if (this.GitHubService.HasSavedCredentials())
+        {
+            this.ConnectCommand.ExecuteAsync(null).Forget();
+        }
     }
 
     /// <summary>
@@ -131,13 +122,13 @@ public partial class MainWindowViewModel : ViewModelBase
         if (this.GitHubService.IsAuthenticated)
         {
             this.GitHubService.Disconnect();
-            this.User = DefaultUser;
+            this.User = UserInfo.Default;
             OnPropertyChanged(nameof(this.ConnectButtonText));
             return;
         }
 
         // Try authenticating to client
-        this.User = await this.GitHubService.Authenticate() ?? DefaultUser;
+        this.User = await this.GitHubService.Authenticate() ?? UserInfo.Default;
         this.DeviceFlowCode = string.Empty;
         OnPropertyChanged(nameof(this.ConnectButtonText));
 
