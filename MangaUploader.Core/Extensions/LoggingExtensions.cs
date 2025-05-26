@@ -9,6 +9,7 @@ namespace MangaUploader.Core.Extensions.Logging;
 /// </summary>
 public static class LoggingExtensions
 {
+    #region Extension Methods
     /// <summary>
     /// Logs a message to the console
     /// </summary>
@@ -37,4 +38,5 @@ public static class LoggingExtensions
 
     /// <inheritdoc cref="LogException"/>
     public static async Task LogExceptionAsync(this Exception exception) => await Console.Error.WriteLineAsync($"[{exception.GetType().Name}]: {exception.Message}\n{exception.StackTrace}");
+    #endregion
 }

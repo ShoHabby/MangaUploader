@@ -9,13 +9,14 @@ namespace MangaUploader.Core.Extensions.Collections;
 /// </summary>
 public static class CollectionExtensions
 {
+    #region Extension methods
     /// <summary>
     /// Checks if a collection is empty or not
     /// </summary>
     /// <param name="collection">Collection to check</param>
     /// <typeparam name="T">Item type in the collection</typeparam>
     /// <returns><see langword="true"/> if the collection is empty, otherwise <see langword="false"/></returns>
-    public static bool IsEmpty<T>(this ICollection<T> collection) => collection.Count == 0;
+    public static bool IsEmpty<T>(this ICollection<T> collection) => collection.Count is 0;
 
     /// <summary>
     /// Adds a set of item to a collection
@@ -30,4 +31,5 @@ public static class CollectionExtensions
             collection.Add(item);
         }
     }
+    #endregion
 }

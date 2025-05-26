@@ -8,6 +8,7 @@ namespace MangaUploader.Core.Extensions.Tasks;
 /// </summary>
 public static class TaskExtensions
 {
+    #region Extension Methods
     /// <summary>
     /// Observes the task to avoid the UnobservedTaskException event to be raised.
     /// </summary>
@@ -25,4 +26,5 @@ public static class TaskExtensions
             _ = ForgetAwaited(task);
         }
     }
+    #endregion
 }
