@@ -48,7 +48,7 @@ public class DropdownItemsOnlyBehaviour : Behavior<AutoCompleteBox>
     /// </summary>
     private void ShowDropdown()
     {
-        if (this.AssociatedObject is null or { IsDropDownOpen: true }) return;
+        if (this.AssociatedObject is not { IsDropDownOpen: false }) return;
 
         this.AssociatedObject.PopulateDropDown(this.AssociatedObject, EventArgs.Empty);
         this.AssociatedObject.OpeningDropDown(false);
@@ -83,9 +83,7 @@ public class DropdownItemsOnlyBehaviour : Behavior<AutoCompleteBox>
     /// <param name="e">Event args</param>
     private void OnLostFocus(object? sender, RoutedEventArgs e)
     {
-        if (this.AssociatedObject is null) return;
-
-        if (this.AssociatedObject.SelectedItem is null)
+        if (this.AssociatedObject is { SelectedItem: null })
         {
             this.AssociatedObject.SetValue(AutoCompleteBox.TextProperty, string.Empty);
         }
@@ -98,7 +96,7 @@ public class DropdownItemsOnlyBehaviour : Behavior<AutoCompleteBox>
     /// <param name="e">Event args</param>
     private void OnDropDownOpening(object? sender, CancelEventArgs e)
     {
-        if (this.AssociatedObject?.TextBox?.IsReadOnly ?? false)
+        if (this.AssociatedObject is { TextBox.IsReadOnly: true })
         {
             e.Cancel = true;
         }

@@ -70,7 +70,7 @@ public partial class MainWindowViewModel : ViewModelBase
     /// <summary>
     /// Selected repository
     /// </summary>
-    [ObservableProperty]
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(SelectedRepoName))]
     public partial RepositoryInfo? SelectedRepository { get; set; }
     /// <summary>
     /// Selected repository name
