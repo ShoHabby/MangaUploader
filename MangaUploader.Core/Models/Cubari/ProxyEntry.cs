@@ -5,6 +5,12 @@ using JetBrains.Annotations;
 namespace MangaUploader.Core.Models.Cubari;
 
 /// <summary>
+/// ProxyType parsing booster
+/// </summary>
+[FastEnum<ProxyEntry.ProxyType>, UsedImplicitly(ImplicitUseKindFlags.Access)]
+public sealed partial class ProxyTypeBooster;
+
+/// <summary>
 /// Proxy chapter entry model
 /// </summary>
 [PublicAPI]
@@ -44,7 +50,11 @@ public sealed partial class ProxyEntry : Entry
     /// Converts this ProxyEntry to a a Uri string
     /// </summary>
     /// <returns>The Uri string representation of this proxy entry</returns>
-    public string ToUri() => this.Type is not ProxyType.None ? $"/proxy/api/{this.Type.FastToString().ToLowerInvariant()}/chapter/{this.ID}" : string.Empty;
+    public string ToUri()
+    {
+        string type = FastEnum.ToString<ProxyType, ProxyTypeBooster>(this.Type);
+        return this.Type is not ProxyType.None ? $"/proxy/api/{type}/chapter/{this.ID}" : string.Empty;
+    }
     #endregion
 
     #region Static Methods
@@ -58,7 +68,7 @@ public sealed partial class ProxyEntry : Entry
         if (string.IsNullOrEmpty(uri)) return null;
 
         Match match = ProxyRegex.Match(uri);
-        if (match.Success && FastEnum.TryParse(match.Groups[1].ValueSpan, true, out ProxyType type))
+        if (match.Success && FastEnum.TryParse<ProxyType, ProxyTypeBooster>(match.Groups[1].ValueSpan, true, out ProxyType type))
         {
             return new ProxyEntry
             {

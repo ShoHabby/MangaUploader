@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -22,6 +22,7 @@ public class CubariService : ICubariService
         Encoder              = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         NumberHandling       = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString,
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
+        TypeInfoResolver     = Manga.MangaSourceGenerationContext.Default,
         WriteIndented        = true
     };
     #endregion

@@ -26,7 +26,7 @@ public sealed class Chapter
     /// Chapter last updated timestamp
     /// </summary>
     [JsonConverter(typeof(UnixTimestampConverter))]
-    public DateTimeOffset LastUpdated { get; set; } = DateTimeOffset.UnixEpoch;
+    public DateTimeOffset LastUpdated { get; set; } = DateTimeOffset.UnixEpoch.ToLocalTime();
     /// <summary>
     /// Chapter entries per group
     /// </summary>

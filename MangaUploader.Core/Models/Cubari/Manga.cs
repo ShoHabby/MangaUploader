@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using JetBrains.Annotations;
@@ -10,8 +10,17 @@ namespace MangaUploader.Core.Models.Cubari;
 /// Manga series model
 /// </summary>
 [PublicAPI]
-public sealed class Manga
+public sealed partial class Manga
 {
+    /// <summary>
+    /// Cubari Manga model source generation json deserialization context
+    /// </summary>
+    [JsonSourceGenerationOptions(NumberHandling       = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString,
+                                 PropertyNamingPolicy = JsonKnownNamingPolicy.SnakeCaseLower,
+                                 WriteIndented        = true)]
+    [JsonSerializable(typeof(Manga))]
+    public partial class MangaSourceGenerationContext : JsonSerializerContext;
+
     #region Properties
     /// <summary>
     /// Manga title
