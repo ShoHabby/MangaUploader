@@ -1,16 +1,19 @@
 ﻿using System.Text.RegularExpressions;
 using FastEnumUtility;
+using JetBrains.Annotations;
 
 namespace MangaUploader.Core.Models.Cubari;
 
 /// <summary>
 /// Proxy chapter entry model
 /// </summary>
+[PublicAPI]
 public sealed partial class ProxyEntry : Entry
 {
     /// <summary>
     /// Proxy types
     /// </summary>
+    [UsedImplicitly(ImplicitUseKindFlags.Access, ImplicitUseTargetFlags.Members)]
     public enum ProxyType
     {
         None,
@@ -55,12 +58,12 @@ public sealed partial class ProxyEntry : Entry
         if (string.IsNullOrEmpty(uri)) return null;
 
         Match match = ProxyRegex.Match(uri);
-        if (match.Success && FastEnum.TryParse(match.Captures[1].ValueSpan, true, out ProxyType type))
+        if (match.Success && FastEnum.TryParse(match.Groups[1].ValueSpan, true, out ProxyType type))
         {
             return new ProxyEntry
             {
                 Type = type,
-                ID   = match.Captures[2].Value
+                ID   = match.Groups[2].Value
             };
         }
 

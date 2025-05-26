@@ -53,10 +53,7 @@ public sealed class EntryConverter : JsonConverter<Entry>
     {
         string? value = reader.GetString();
         ProxyEntry? entry = ProxyEntry.FromUri(value);
-        if (entry is null) throw new JsonException($"Invalid proxy entry Uri detected ({value}).");
-
-        reader.Read();
-        return entry;
+        return entry ?? throw new JsonException($"Invalid proxy entry Uri detected ({value}).");
     }
 
     /// <summary>
@@ -76,9 +73,10 @@ public sealed class EntryConverter : JsonConverter<Entry>
             string? value = reader.GetString();
             if (string.IsNullOrEmpty(value)) throw new JsonException("Empty list entry element.");
 
-            entry.Images.Add(value.AsUri());
             reader.Read();
+            entry.Images.Add(value.AsUri());
         }
+
         return entry;
     }
 

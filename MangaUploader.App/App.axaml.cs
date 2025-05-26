@@ -60,6 +60,7 @@ public class App : Application
         // Add other services
         services.AddSingleton<IGitHubService, GitHubService>();
         services.AddSingleton<IClipboardService, ClipboardService>();
+        services.AddSingleton<ICubariService, CubariService>();
 
         // Add VM transients
         services.AddTransient<MainWindowViewModel>();

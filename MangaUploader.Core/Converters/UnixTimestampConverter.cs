@@ -5,6 +5,9 @@ using System.Text.Json.Serialization;
 
 namespace MangaUploader.Core.Converters;
 
+/// <summary>
+/// Unix timestamp converter
+/// </summary>
 public class UnixTimestampConverter : JsonConverter<DateTimeOffset>
 {
     #region Overrides
@@ -12,10 +15,7 @@ public class UnixTimestampConverter : JsonConverter<DateTimeOffset>
     public override DateTimeOffset Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         string? value = reader.GetString();
-        if (value is null) return DateTimeOffset.UnixEpoch;
-
-        reader.Read();
-        return long.TryParse(value, out long timestamp) ? DateTimeOffset.FromUnixTimeSeconds(timestamp) : DateTimeOffset.UnixEpoch;
+        return long.TryParse(value, out long timestamp) ? DateTimeOffset.FromUnixTimeSeconds(timestamp).LocalDateTime : DateTimeOffset.UnixEpoch.LocalDateTime;
     }
 
     /// <inheritdoc />

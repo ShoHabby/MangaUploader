@@ -1,11 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
+using JetBrains.Annotations;
+using MangaUploader.Core.Converters;
 
 namespace MangaUploader.Core.Models.Cubari;
 
 /// <summary>
 /// Manga series model
 /// </summary>
+[PublicAPI]
 public sealed class Manga
 {
     #region Properties
@@ -28,10 +32,12 @@ public sealed class Manga
     /// <summary>
     /// Cover page URL
     /// </summary>
-    public Uri Cover { get; set; } = new(string.Empty);
+    [JsonConverter(typeof(NullToStringConverter<Uri>))]
+    public Uri? Cover { get; set; }
     /// <summary>
     /// Manga chapters
     /// </summary>
+    [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
     public SortedDictionary<decimal, Chapter> Chapters { get; } = [];
     #endregion
 }

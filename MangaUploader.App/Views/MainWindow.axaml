@@ -6,9 +6,8 @@
         xmlns:b="clr-namespace:MangaUploader.Core.Behaviours;assembly=MangaUploader.Core"
         xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
         xmlns:ail="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
-        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="800"
+        x:CompileBindings="True" mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="800"
         MinWidth="300" MinHeight="400" Padding="10"
-        x:CompileBindings="True"
         x:Class="MangaUploader.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/maribshohabby.ico"
@@ -18,7 +17,7 @@
         <vm:MainWindowViewModel />
     </Design.DataContext>
 
-    <DockPanel LastChildFill="False" VerticalSpacing="5">
+    <DockPanel LastChildFill="True" VerticalSpacing="5">
         <DockPanel DockPanel.Dock="Top" HorizontalSpacing="10">
             <Border DockPanel.Dock="Left" ClipToBounds="True" CornerRadius="{Binding AvatarCornerRadius}">
                 <ail:AdvancedImage Source="{Binding User.AvatarURL}" Width="{Binding AvatarSize}" Height="{Binding AvatarSize}" />
@@ -38,6 +37,7 @@
             </i:Interaction.Behaviors>
         </AutoCompleteBox>
         <TextBlock DockPanel.Dock="Bottom" Text="{Binding SelectedRepoName}" />
+        <Button Content="Test Serialization" Command="{Binding TestSerializationCommand}" HorizontalAlignment="Center" />
     </DockPanel>
 
 </Window>
