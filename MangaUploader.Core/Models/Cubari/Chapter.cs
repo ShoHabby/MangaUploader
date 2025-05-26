@@ -10,6 +10,7 @@ namespace MangaUploader.Core.Models.Cubari;
 /// </summary>
 public sealed class Chapter
 {
+    #region Properties
     /// <summary>
     /// Chapter title
     /// </summary>
@@ -26,5 +27,6 @@ public sealed class Chapter
     /// Chapter last updated timestamp
     /// </summary>
     [JsonConverter(typeof(UnixTimestampConverter))]
-    public DateTimeOffset LastUpdated { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset LastUpdated { get; set; } = DateTimeOffset.UnixEpoch;
+    #endregion
 }

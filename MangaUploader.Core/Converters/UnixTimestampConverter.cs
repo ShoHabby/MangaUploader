@@ -7,14 +7,15 @@ namespace MangaUploader.Core.Converters;
 
 public class UnixTimestampConverter : JsonConverter<DateTimeOffset>
 {
-    #region Overrides of JsonConverter<DateTime>
+    #region Overrides
     /// <inheritdoc />
     public override DateTimeOffset Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         string? value = reader.GetString();
+        if (value is null) return DateTimeOffset.UnixEpoch;
+
         reader.Read();
-        return value is not null && long.TryParse(value, out long timestamp)
-                   ? DateTimeOffset.FromUnixTimeSeconds(timestamp) : DateTimeOffset.UnixEpoch;
+        return long.TryParse(value, out long timestamp) ? DateTimeOffset.FromUnixTimeSeconds(timestamp) : DateTimeOffset.UnixEpoch;
     }
 
     /// <inheritdoc />

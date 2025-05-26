@@ -17,12 +17,15 @@ public sealed partial class ProxyEntry : Entry
         ImgChest
     }
 
+    #region Constants
     /// <summary>
     /// Proxy entry regex match
     /// </summary>
     [GeneratedRegex(@"/proxy/api/([a-z]+)/chapter/([\w-]+)", RegexOptions.Compiled)]
     private static partial Regex ProxyRegex { get; }
+    #endregion
 
+    #region Properties
     /// <summary>
     /// Entry proxy type
     /// </summary>
@@ -31,13 +34,17 @@ public sealed partial class ProxyEntry : Entry
     /// Entry proxy ID
     /// </summary>
     public string ID { get; set; } = string.Empty;
+    #endregion
 
+    #region Methods
     /// <summary>
     /// Converts this ProxyEntry to a a Uri string
     /// </summary>
     /// <returns>The Uri string representation of this proxy entry</returns>
     public string ToUri() => this.Type is not ProxyType.None ? $"/proxy/api/{this.Type.FastToString().ToLowerInvariant()}/chapter/{this.ID}" : string.Empty;
+    #endregion
 
+    #region Static Methods
     /// <summary>
     /// Creates a ProxyEntry from a given uri string
     /// </summary>
@@ -60,4 +67,5 @@ public sealed partial class ProxyEntry : Entry
         return null;
 
     }
+    #endregion
 }

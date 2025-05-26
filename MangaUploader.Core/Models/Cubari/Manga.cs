@@ -8,6 +8,7 @@ namespace MangaUploader.Core.Models.Cubari;
 /// </summary>
 public sealed class Manga
 {
+    #region Properties
     /// <summary>
     /// Manga title
     /// </summary>
@@ -32,4 +33,5 @@ public sealed class Manga
     /// Manga chapters
     /// </summary>
     public SortedDictionary<decimal, Chapter> Chapters { get; } = [];
+    #endregion
 }
