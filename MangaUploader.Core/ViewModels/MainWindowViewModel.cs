@@ -45,6 +45,10 @@ public partial class MainWindowViewModel : ViewModelBase
     /// Current GitHub Service
     /// </summary>
     private IGitHubService? GitHubService { get; }
+    /// <summary>
+    /// Current Clipboard service
+    /// </summary>
+    private IClipboardService? ClipboardService { get; }
     #endregion
 
     #region Observable Properties
@@ -82,18 +86,21 @@ public partial class MainWindowViewModel : ViewModelBase
     /// <summary>
     /// Default constructor for AppBuilder
     /// </summary>
-    public MainWindowViewModel() : this(null) { }
+    public MainWindowViewModel() : this(null, null) { }
 
     /// <summary>
     /// DI Constructor
     /// </summary>
     /// <param name="gitHubService">Current GitHub Service</param>
+    /// <param name="clipboardService">Current Clipboard service</param>
     [UsedImplicitly(ImplicitUseKindFlags.InstantiatedWithFixedConstructorSignature)]
-    public MainWindowViewModel(IGitHubService? gitHubService)
+    public MainWindowViewModel(IGitHubService? gitHubService, IClipboardService? clipboardService)
     {
         if (gitHubService is null) return;
 
-        this.GitHubService                           =  gitHubService;
+        this.GitHubService    = gitHubService;
+        this.ClipboardService = clipboardService;
+
         this.GitHubService.OnDeviceFlowCodeAvailable += OnDeviceFlowCodeAvailable;
 
         this.ConnectCommand.ExecuteAsync(null).Forget();
@@ -164,7 +171,7 @@ public partial class MainWindowViewModel : ViewModelBase
     private void OnDeviceFlowCodeAvailable(string userCode, TimeSpan validFor)
     {
         this.DeviceFlowCode = userCode;
-        this.GitHubService!.CopyDeviceCodeToClipboard().Forget();
+        this.ClipboardService?.CopyTextToClipboard(userCode).Forget();
     }
     #endregion
 }

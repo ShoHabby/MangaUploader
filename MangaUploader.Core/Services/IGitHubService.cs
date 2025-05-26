@@ -41,11 +41,6 @@ public interface IGitHubService
     Task<UserInfo?> Authenticate();
 
     /// <summary>
-    /// Copies the device flow code to the clipboard
-    /// </summary>
-    Task CopyDeviceCodeToClipboard();
-
-    /// <summary>
     /// Fetches the user's public repos
     /// </summary>
     /// <returns>An array of public repos owned by the user</returns>

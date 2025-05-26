@@ -52,10 +52,6 @@ public class GitHubService : IGitHubService
     private static readonly ImmutableArray<string> AppScopes = ["public_repo"];
     #endregion
 
-    #region Fields
-    private string deviceFlowCode = string.Empty;
-    #endregion
-
     #region Properties
     /// <summary>
     /// GitHub client
@@ -146,13 +142,11 @@ public class GitHubService : IGitHubService
         OauthDeviceFlowResponse response = await this.Client.Oauth.InitiateDeviceFlow(request);
 
         // Broadcast user code then open browser
-        this.deviceFlowCode = response.UserCode;
         OnDeviceFlowCodeAvailable?.Invoke(response.UserCode, TimeSpan.FromSeconds(response.ExpiresIn));
         await App.GetTopLevel().Launcher.LaunchUriAsync(response.VerificationUri.AsUri());
 
         // Wait for user to approve app connection
         OauthToken token = await this.Client.Oauth.CreateAccessTokenForDeviceFlow(CLIENT_ID, response);
-        this.deviceFlowCode = string.Empty;
 
         // If failed, dump error and exit
         if (string.IsNullOrEmpty(token.AccessToken))
@@ -186,17 +180,6 @@ public class GitHubService : IGitHubService
             await this.LogErrorAsync("Invalid credentials detected, deleting existing token...");
             await e.LogExceptionAsync();
             return null;
-        }
-    }
-
-    /// <inheritdoc />
-    public async Task CopyDeviceCodeToClipboard()
-    {
-        // Make sure a valid device code exists
-        if (!string.IsNullOrEmpty(this.deviceFlowCode))
-        {
-            // Set the text in the clipboard
-            await App.GetTopLevel().Clipboard!.SetTextAsync(this.deviceFlowCode);
         }
     }
 
