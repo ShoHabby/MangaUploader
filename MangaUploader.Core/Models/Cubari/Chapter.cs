@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
+using MangaUploader.Core.Converters;
 
 namespace MangaUploader.Core.Models.Cubari;
 
@@ -23,5 +25,6 @@ public sealed class Chapter
     /// <summary>
     /// Chapter last updated timestamp
     /// </summary>
-    public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
+    [JsonConverter(typeof(UnixTimestampConverter))]
+    public DateTimeOffset LastUpdated { get; set; } = DateTimeOffset.UtcNow;
 }
