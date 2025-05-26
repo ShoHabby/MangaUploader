@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using GitCredentialManager;
 using MangaUploader.Core.Extensions.Collections;
 using MangaUploader.Core.Extensions.Logging;
+using MangaUploader.Core.Extensions.Strings;
 using MangaUploader.Core.Models;
 using MangaUploader.Core.Services;
 using Octokit;
@@ -19,6 +22,16 @@ namespace MangaUploader.Services;
 /// </summary>
 public class GitHubService : IGitHubService
 {
+    /// <summary>
+    /// Where the credentials where fetched from
+    /// </summary>
+    private enum CredentialsFetchType
+    {
+        None,
+        Vault,
+        Oauth,
+    }
+
     #region Constants
     /// <summary>
     /// GitHub service URL
@@ -57,12 +70,6 @@ public class GitHubService : IGitHubService
     #region Events
     /// <inheritdoc />
     public event DeviceFlowCodeDelegate? OnDeviceFlowCodeAvailable;
-    /// <inheritdoc />
-    public event AuthenticationFailedDelegate? OnAuthenticationFailed;
-    /// <inheritdoc />
-    public event AuthenticationCompletedDelegate? OnAuthenticationCompleted;
-    /// <inheritdoc />
-    public event RepositoriesFetchedDelegate? OnRepositoriesFetched;
     #endregion
 
     #region Properties
@@ -72,58 +79,67 @@ public class GitHubService : IGitHubService
 
     #region Methods
     /// <inheritdoc />
-    public async Task Connect()
+    public async Task<UserInfo?> Authenticate()
     {
-        if (this.IsAuthenticated) return;
+        if (this.IsAuthenticated) return null;
 
-        // Try and get credentials from vault
-        ICredential? credentials = this.Vault.Get(SERVICE, PRODUCT);
-        if (credentials is null)
-        {
-            // If it fails, request them through Device Flow
-            credentials = await RequestAccessToken();
-            // If that still fails, quit out
-            if (credentials is null)
-            {
-                OnAuthenticationFailed?.Invoke();
-                return;
-            }
-        }
+        // Try and get credentials
+        (ICredential? credentials, CredentialsFetchType fetchType) = await FetchCredentials();
+
+        // If no credentials could be fetched, exit
+        if (credentials is null) return null;
 
         // Test authentication with client
         User? user = await TestAuthentication(credentials);
         if (user is null)
         {
-            // If it fails, the token may have expired, request a new access token
-            credentials = await RequestAccessToken();
-            // If that fails, or if the connection test fails again, quit out
-            if (credentials is null)
+            // Remove invalid credentials
+            this.Vault.Remove(SERVICE, PRODUCT);
+            switch (fetchType)
             {
-                OnAuthenticationFailed?.Invoke();
-                return;
+                // If authentication failed from vault, we can get new ones through Oauth
+                case CredentialsFetchType.Vault:
+                    break;
+
+                // If authentication failed from Oauth, assume something is wrong and quit out
+                case CredentialsFetchType.Oauth:
+                    return null;
+
+                // Invalid
+                case CredentialsFetchType.None:
+                default:
+                    throw new InvalidEnumArgumentException(nameof(fetchType), (int)fetchType, typeof(CredentialsFetchType));
             }
 
+            // Try and get new credentials, forcing Oauth
+            (credentials, _) = await FetchCredentials(false);
+            if (credentials is null) return null;
+
+            // Try testing authentication again, if it fails, quit out
             user = await TestAuthentication(credentials);
-            if (user is null)
-            {
-                OnAuthenticationFailed?.Invoke();
-                return;
-            }
+            if (user is null) return null;
         }
 
-        // Authentication completed, notify of such
+        // Authentication completed
         this.IsAuthenticated = true;
-        OnAuthenticationCompleted?.Invoke(new UserInfo(user.Login, user.Email, user.AvatarUrl));
-
-        await FetchPublicRepos();
+        return new UserInfo(user.Login, user.Email, user.AvatarUrl);
     }
 
     /// <summary>
-    /// Request an OAuth token through Device Flow to authenticate the app with the client
+    /// Fetches the credentials from the vault, or if none are found,
+    /// requests new ones
     /// </summary>
+    /// <param name="checkVault">If the vault should be checked for credentials or not</param>
     /// <returns>The fetched credentials if successful, or <see langword="null"/></returns>
-    private async Task<ICredential?> RequestAccessToken()
+    private async Task<(ICredential?, CredentialsFetchType)> FetchCredentials(bool checkVault = true)
     {
+        // Try and get the credentials from the vault if possible
+        if (checkVault)
+        {
+            ICredential? credentials = this.Vault.Get(SERVICE, PRODUCT);
+            if (credentials is not null) return (credentials, CredentialsFetchType.Vault);
+        }
+
         // Request authentication code
         OauthDeviceFlowRequest request = new(CLIENT_ID);
         request.Scopes.AddRange(AppScopes.AsSpan());
@@ -132,7 +148,7 @@ public class GitHubService : IGitHubService
         // Broadcast user code then open browser
         this.deviceFlowCode = response.UserCode;
         OnDeviceFlowCodeAvailable?.Invoke(response.UserCode, TimeSpan.FromSeconds(response.ExpiresIn));
-        await App.GetTopLevel().Launcher.LaunchUriAsync(new Uri(response.VerificationUri));
+        await App.GetTopLevel().Launcher.LaunchUriAsync(response.VerificationUri.AsUri());
 
         // Wait for user to approve app connection
         OauthToken token = await this.Client.Oauth.CreateAccessTokenForDeviceFlow(CLIENT_ID, response);
@@ -142,12 +158,12 @@ public class GitHubService : IGitHubService
         if (string.IsNullOrEmpty(token.AccessToken))
         {
             await this.LogErrorAsync($"Could not get GitHub OAuth token.\n Error: {token.Error}");
-            return null;
+            return (null, CredentialsFetchType.None);
         }
 
         // Store token securely and return it
         this.Vault.AddOrUpdate(SERVICE, PRODUCT, token.AccessToken);
-        return this.Vault.Get(SERVICE, PRODUCT);
+        return (this.Vault.Get(SERVICE, PRODUCT), CredentialsFetchType.Oauth);
     }
 
     /// <summary>
@@ -166,19 +182,29 @@ public class GitHubService : IGitHubService
         }
         catch (Exception e)
         {
-            this.Vault.Remove(SERVICE, PRODUCT);
+            // Log error and return
             await this.LogErrorAsync("Invalid credentials detected, deleting existing token...");
             await e.LogExceptionAsync();
             return null;
         }
     }
 
-    /// <summary>
-    /// Fetches the user's public repos
-    /// </summary>
-    /// <returns>An array of public repos owned by the user</returns>
-    private async Task FetchPublicRepos()
+    /// <inheritdoc />
+    public async Task CopyDeviceCodeToClipboard()
     {
+        // Make sure a valid device code exists
+        if (!string.IsNullOrEmpty(this.deviceFlowCode))
+        {
+            // Set the text in the clipboard
+            await App.GetTopLevel().Clipboard!.SetTextAsync(this.deviceFlowCode);
+        }
+    }
+
+    /// <inheritdoc />
+    public async Task<ImmutableArray<RepositoryInfo>?> FetchPublicRepos()
+    {
+        if (!this.IsAuthenticated) return null;
+
         IReadOnlyList<Repository> repos = await this.Client.Repository.GetAllForCurrent();
         ImmutableArray<RepositoryInfo>.Builder reposBuilder = ImmutableArray.CreateBuilder<RepositoryInfo>();
         foreach (Repository repo in repos.Where(r => !r.Archived))
@@ -186,17 +212,7 @@ public class GitHubService : IGitHubService
             reposBuilder.Add(new RepositoryInfo(repo.FullName, repo.Id));
         }
 
-        OnRepositoriesFetched?.Invoke(reposBuilder.ToImmutable());
-    }
-
-    /// <inheritdoc />
-    public async Task CopyDeviceCodeToClipboard()
-    {
-        // Make sure a valid device code exists
-        if (string.IsNullOrEmpty(this.deviceFlowCode)) return;
-
-        // Set the text in the clipboard
-        await App.GetTopLevel().Clipboard!.SetTextAsync(this.deviceFlowCode);
+        return reposBuilder.ToImmutable();
     }
 
     /// <inheritdoc />

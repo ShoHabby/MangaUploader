@@ -17,19 +17,6 @@ public interface IGitHubService
     /// <param name="userCode">Current device flow user code</param>
     /// <param name="validFor">How long this device code will be valid for</param>
     public delegate void DeviceFlowCodeDelegate(string userCode, TimeSpan validFor);
-    /// <summary>
-    /// User authentication failed delegate
-    /// </summary>
-    public delegate void AuthenticationFailedDelegate();
-    /// <summary>
-    /// User authentication completed delegate
-    /// </summary>
-    /// <param name="user">The user that has just authenticated</param>
-    public delegate void AuthenticationCompletedDelegate(in UserInfo user);
-    /// <summary>
-    /// User's repositories fetched delegate
-    /// </summary>
-    public delegate void RepositoriesFetchedDelegate(ImmutableArray<RepositoryInfo> repositories);
     #endregion
 
     #region Events
@@ -37,18 +24,6 @@ public interface IGitHubService
     /// Callback for device flow code available
     /// </summary>
     event DeviceFlowCodeDelegate? OnDeviceFlowCodeAvailable;
-    /// <summary>
-    /// Callback for GitHub authentication failed
-    /// </summary>
-    event AuthenticationFailedDelegate? OnAuthenticationFailed;
-    /// <summary>
-    /// Callback for GitHub authentication completed
-    /// </summary>
-    event AuthenticationCompletedDelegate? OnAuthenticationCompleted;
-    /// <summary>
-    /// Callback for public repositories fetch completion
-    /// </summary>
-    event RepositoriesFetchedDelegate? OnRepositoriesFetched;
     #endregion
 
     #region Properties
@@ -60,14 +35,21 @@ public interface IGitHubService
 
     #region Methods
     /// <summary>
-    /// Connect to GitHub client
+    /// Authenticates to the GitHub client
     /// </summary>
-    Task Connect();
+    /// <returns>The authenticated user info when successful, or <see langword="null"/> on failure</returns>
+    Task<UserInfo?> Authenticate();
 
     /// <summary>
     /// Copies the device flow code to the clipboard
     /// </summary>
     Task CopyDeviceCodeToClipboard();
+
+    /// <summary>
+    /// Fetches the user's public repos
+    /// </summary>
+    /// <returns>An array of public repos owned by the user</returns>
+    Task<ImmutableArray<RepositoryInfo>?> FetchPublicRepos();
 
     /// <summary>
     /// Disconnect from GitHub client

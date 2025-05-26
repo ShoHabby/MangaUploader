@@ -21,9 +21,9 @@
     <DockPanel LastChildFill="False" VerticalSpacing="5">
         <DockPanel DockPanel.Dock="Top" HorizontalSpacing="10">
             <Border DockPanel.Dock="Left" ClipToBounds="True" CornerRadius="{Binding AvatarCornerRadius}">
-                <ail:AdvancedImage Source="{Binding AvatarURL}" Width="{Binding AvatarSize}" Height="{Binding AvatarSize}" />
+                <ail:AdvancedImage Source="{Binding User.AvatarURL}" Width="{Binding AvatarSize}" Height="{Binding AvatarSize}" />
             </Border>
-            <TextBlock DockPanel.Dock="Left" Text="{Binding Username}" VerticalAlignment="Center" />
+            <TextBlock DockPanel.Dock="Left" Text="{Binding User.Login}" VerticalAlignment="Center" />
             <Button DockPanel.Dock="Right" Command="{Binding ConnectCommand}"
                     Content="{Binding ConnectButtonText}" HorizontalContentAlignment="Center"
                     Width="80" HorizontalAlignment="Center" VerticalAlignment="Center" />

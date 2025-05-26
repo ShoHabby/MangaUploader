@@ -25,6 +25,10 @@ public partial class MainWindowViewModel : ViewModelBase
     /// Default username
     /// </summary>
     private const string DEFAULT_NAME = "Please log in...";
+    /// <summary>
+    /// Default user object
+    /// </summary>
+    private static readonly UserInfo DefaultUser = new(DEFAULT_NAME, string.Empty, DEFAULT_AVATAR);
 
     /// <summary>
     /// Avatar picture size
@@ -45,15 +49,10 @@ public partial class MainWindowViewModel : ViewModelBase
 
     #region Observable Properties
     /// <summary>
-    /// User's avatar URL
+    /// Currently authenticated user
     /// </summary>
     [ObservableProperty]
-    public partial string AvatarURL { get; set; } = DEFAULT_AVATAR;
-    /// <summary>
-    /// GitHub username
-    /// </summary>
-    [ObservableProperty]
-    public partial string Username { get; set; } = DEFAULT_NAME;
+    public partial UserInfo User { get; set; } = DefaultUser;
     /// <summary>
     /// Connect button text
     /// </summary>
@@ -63,7 +62,6 @@ public partial class MainWindowViewModel : ViewModelBase
     /// </summary>
     [ObservableProperty]
     public partial string DeviceFlowCode { get; set; } = string.Empty;
-
     /// <summary>
     /// Repositories that can be edited
     /// </summary>
@@ -72,7 +70,7 @@ public partial class MainWindowViewModel : ViewModelBase
     /// <summary>
     /// Selected repository
     /// </summary>
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(SelectedRepoName))]
+    [ObservableProperty]
     public partial RepositoryInfo? SelectedRepository { get; set; }
     /// <summary>
     /// Selected repository name
@@ -90,16 +88,13 @@ public partial class MainWindowViewModel : ViewModelBase
     /// DI Constructor
     /// </summary>
     /// <param name="gitHubService">Current GitHub Service</param>
-    [UsedImplicitly(ImplicitUseKindFlags.InstantiatedWithFixedConstructorSignature, Reason = "DI Constructor")]
+    [UsedImplicitly(ImplicitUseKindFlags.InstantiatedWithFixedConstructorSignature)]
     public MainWindowViewModel(IGitHubService? gitHubService)
     {
         if (gitHubService is null) return;
 
         this.GitHubService                           =  gitHubService;
         this.GitHubService.OnDeviceFlowCodeAvailable += OnDeviceFlowCodeAvailable;
-        this.GitHubService.OnAuthenticationFailed    += OnAuthenticationFailed;
-        this.GitHubService.OnAuthenticationCompleted += OnAuthenticationCompleted;
-        this.GitHubService.OnRepositoriesFetched     += OnRepositoriesFetched;
 
         this.ConnectCommand.ExecuteAsync(null).Forget();
     }
@@ -113,9 +108,6 @@ public partial class MainWindowViewModel : ViewModelBase
         if (this.GitHubService is null) return;
 
         this.GitHubService.OnDeviceFlowCodeAvailable -= OnDeviceFlowCodeAvailable;
-        this.GitHubService.OnAuthenticationFailed    -= OnAuthenticationFailed;
-        this.GitHubService.OnAuthenticationCompleted -= OnAuthenticationCompleted;
-        this.GitHubService.OnRepositoriesFetched     -= OnRepositoriesFetched;
     }
     #endregion
 
@@ -128,16 +120,37 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         if (this.GitHubService is null) return;
 
+        // If authenticated, disconnect instead
         if (this.GitHubService.IsAuthenticated)
         {
             this.GitHubService.Disconnect();
-            this.AvatarURL = DEFAULT_AVATAR;
-            this.Username  = DEFAULT_NAME;
+            this.User = DefaultUser;
             OnPropertyChanged(nameof(this.ConnectButtonText));
+            return;
         }
-        else
+
+        // Try authenticating to client
+        this.User = await this.GitHubService.Authenticate() ?? DefaultUser;
+        this.DeviceFlowCode = string.Empty;
+        OnPropertyChanged(nameof(this.ConnectButtonText));
+
+        // Fetch user's repos if authentication was a success
+        if (this.GitHubService.IsAuthenticated)
         {
-            await this.GitHubService.Connect();
+            FetchRepositories().Forget();   // Running in a separate task to clear up the execution on this command
+        }
+    }
+    #endregion
+
+    #region Methods
+    /// <summary>
+    /// Fetches the public repositories owned by the authenticated user
+    /// </summary>
+    private async Task FetchRepositories()
+    {
+        if (this.GitHubService is not null)
+        {
+            this.Repositories = await this.GitHubService.FetchPublicRepos() ?? ImmutableArray<RepositoryInfo>.Empty;
         }
     }
     #endregion
@@ -153,28 +166,5 @@ public partial class MainWindowViewModel : ViewModelBase
         this.DeviceFlowCode = userCode;
         this.GitHubService!.CopyDeviceCodeToClipboard().Forget();
     }
-
-    /// <summary>
-    /// Authentication failed event handler
-    /// </summary>
-    private void OnAuthenticationFailed() => this.DeviceFlowCode = string.Empty;
-
-    /// <summary>
-    /// Authentication completed event handler
-    /// </summary>
-    private void OnAuthenticationCompleted(in UserInfo user)
-    {
-        this.Username       = user.Login;
-        this.AvatarURL      = user.AvatarURL;
-        this.DeviceFlowCode = string.Empty;
-
-        OnPropertyChanged(nameof(this.ConnectButtonText));
-    }
-
-    /// <summary>
-    /// Repositories fetched event handler
-    /// </summary>
-    /// <param name="repositories">The fetched repositories for the user</param>
-    private void OnRepositoriesFetched(ImmutableArray<RepositoryInfo> repositories) => this.Repositories = repositories;
     #endregion
 }
