@@ -8,7 +8,7 @@ namespace MangaUploader.Core.Converters;
 /// <summary>
 /// Null value to empty string converter
 /// </summary>
-public class NullToStringConverter<T> : JsonConverter<T?> where T : class
+public sealed class NullToStringConverter<T> : JsonConverter<T?> where T : class
 {
     #region Properties
     /// <inheritdoc />

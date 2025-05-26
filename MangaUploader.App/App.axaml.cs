@@ -19,7 +19,7 @@ namespace MangaUploader;
 /// <summary>
 /// Application root
 /// </summary>
-public class App : Application
+public sealed class App : Application
 {
     /// <summary>
     /// Gets the current top level application

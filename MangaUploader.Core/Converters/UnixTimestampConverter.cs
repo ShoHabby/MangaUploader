@@ -8,7 +8,7 @@ namespace MangaUploader.Core.Converters;
 /// <summary>
 /// Unix timestamp converter
 /// </summary>
-public class UnixTimestampConverter : JsonConverter<DateTimeOffset>
+public sealed class UnixTimestampConverter : JsonConverter<DateTimeOffset>
 {
     #region Overrides
     /// <inheritdoc />

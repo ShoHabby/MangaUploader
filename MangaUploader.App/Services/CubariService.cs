@@ -11,7 +11,7 @@ namespace MangaUploader.Services;
 /// <summary>
 /// Cubari API service
 /// </summary>
-public class CubariService : ICubariService
+public sealed class CubariService : ICubariService
 {
     #region Properties
     /// <summary>

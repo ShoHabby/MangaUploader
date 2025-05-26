@@ -10,7 +10,7 @@ namespace MangaUploader.Core.Converters;
 /// Converter handling nullable numbers
 /// </summary>
 /// <typeparam name="T">Number type</typeparam>
-public class NullableNumberToStringConverter<T> : JsonConverter<T?> where T : struct, INumber<T>
+public sealed class NullableNumberToStringConverter<T> : JsonConverter<T?> where T : struct, INumber<T>
 {
     #region Properties
     /// <inheritdoc />

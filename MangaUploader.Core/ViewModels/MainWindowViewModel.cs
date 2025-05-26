@@ -16,7 +16,7 @@ namespace MangaUploader.Core.ViewModels;
 /// <summary>
 /// Main window ViewModel
 /// </summary>
-public partial class MainWindowViewModel : ViewModelBase
+public sealed partial class MainWindowViewModel : ViewModelBase
 {
     #region Constants
     /// <summary>

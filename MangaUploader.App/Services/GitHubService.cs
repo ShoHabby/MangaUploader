@@ -19,7 +19,7 @@ namespace MangaUploader.Services;
 /// <summary>
 /// GitHub Service implementation
 /// </summary>
-public class GitHubService : IGitHubService
+public sealed class GitHubService : IGitHubService
 {
     /// <summary>
     /// Where the credentials where fetched from

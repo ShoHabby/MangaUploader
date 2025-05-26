@@ -50,9 +50,9 @@ public sealed partial class ProxyEntry : Entry
     /// Converts this ProxyEntry to a a Uri string
     /// </summary>
     /// <returns>The Uri string representation of this proxy entry</returns>
-    public string ToUri()
+    public string ToUriString()
     {
-        string type = FastEnum.ToString<ProxyType, ProxyTypeBooster>(this.Type);
+        string type = FastEnum.ToString<ProxyType, ProxyTypeBooster>(this.Type).ToLowerInvariant();
         return this.Type is not ProxyType.None ? $"/proxy/api/{type}/chapter/{this.ID}" : string.Empty;
     }
     #endregion
@@ -63,7 +63,7 @@ public sealed partial class ProxyEntry : Entry
     /// </summary>
     /// <param name="uri">Uri to create the entry from</param>
     /// <returns>The created entry, or <see langword="null"/> if an entry could not be created</returns>
-    public static ProxyEntry? FromUri(string? uri)
+    public static ProxyEntry? FromUriString(string? uri)
     {
         if (string.IsNullOrEmpty(uri)) return null;
 

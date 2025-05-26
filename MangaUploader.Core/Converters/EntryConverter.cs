@@ -52,7 +52,7 @@ public sealed class EntryConverter : JsonConverter<Entry>
     private static ProxyEntry ParseProxyEntry(ref Utf8JsonReader reader)
     {
         string? value = reader.GetString();
-        ProxyEntry? entry = ProxyEntry.FromUri(value);
+        ProxyEntry? entry = ProxyEntry.FromUriString(value);
         return entry ?? throw new JsonException($"Invalid proxy entry Uri detected ({value}).");
     }
 
@@ -85,7 +85,7 @@ public sealed class EntryConverter : JsonConverter<Entry>
     /// </summary>
     /// <param name="writer">JSON writer</param>
     /// <param name="proxyEntry">The proxy entry to write</param>
-    private static void WriteProxyEntry(Utf8JsonWriter writer, ProxyEntry proxyEntry) => writer.WriteStringValue(proxyEntry.ToUri());
+    private static void WriteProxyEntry(Utf8JsonWriter writer, ProxyEntry proxyEntry) => writer.WriteStringValue(proxyEntry.ToUriString());
 
     /// <summary>
     /// Writes a list entry value
