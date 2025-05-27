@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using GitCredentialManager;
@@ -20,7 +19,7 @@ namespace MangaUploader.Services;
 /// <summary>
 /// GitHub Service implementation
 /// </summary>
-public class GitHubService : IGitHubService
+public sealed class GitHubService : IGitHubService
 {
     /// <summary>
     /// Where the credentials where fetched from

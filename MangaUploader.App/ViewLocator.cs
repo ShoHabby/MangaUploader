@@ -7,7 +7,7 @@ namespace MangaUploader;
 /// <summary>
 /// ViewModel locator
 /// </summary>
-public class ViewLocator : StrongViewLocator
+public sealed class ViewLocator : StrongViewLocator
 {
     public ViewLocator() => Register<MainWindowViewModel, MainWindow>();
 }

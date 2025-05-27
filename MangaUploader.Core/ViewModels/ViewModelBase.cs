@@ -5,4 +5,4 @@ namespace MangaUploader.Core.ViewModels;
 /// <summary>
 /// ViewModel base class
 /// </summary>
-public class ViewModelBase : ObservableObject;
+public abstract class ViewModelBase : ObservableObject;

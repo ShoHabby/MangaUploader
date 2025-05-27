@@ -30,6 +30,10 @@
         <DefineConstants>TRACE,DEBUG</DefineConstants>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <JsonSerializerIsReflectionEnabledByDefault>false</JsonSerializerIsReflectionEnabledByDefault>
+    </PropertyGroup>
+
     <ItemGroup>
         <AvaloniaResource Include="Assets\**" />
     </ItemGroup>
@@ -77,4 +81,12 @@
     <ItemGroup>
       <ProjectReference Include="..\MangaUploader.Core\MangaUploader.Core.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="..\Testing\**">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+            <TargetPath>Testing\%(Filename)%(Extension)</TargetPath>
+        </Content>
+    </ItemGroup>
+
 </Project>

@@ -1,13 +1,12 @@
 using System;
 using Avalonia.Controls;
-using Avalonia.Input;
 
 namespace MangaUploader.Views;
 
 /// <summary>
 /// Main window view
 /// </summary>
-public partial class MainWindow : Window
+public sealed partial class MainWindow : Window
 {
     /// <summary>
     /// Window Initialization

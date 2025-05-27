@@ -10,7 +10,7 @@ namespace MangaUploader.Core.Behaviours;
 /// <summary>
 /// Behaviour that restricts the AutoCompleteBox to only select items from it's dropdown menu
 /// </summary>
-public class DropdownItemsOnlyBehaviour : Behavior<AutoCompleteBox>
+public sealed class DropdownItemsOnlyBehaviour : Behavior<AutoCompleteBox>
 {
     #region Overrides
     /// <inheritdoc />
