@@ -31,6 +31,6 @@ public sealed class Chapter
     /// Chapter entries per group
     /// </summary>
     [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
-    public OrderedDictionary<string, Entry> Groups { get; } = [];
+    public OrderedDictionary<Groups, Entry> Groups { get; } = [];
     #endregion
 }
