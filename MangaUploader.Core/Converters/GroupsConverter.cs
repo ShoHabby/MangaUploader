@@ -14,12 +14,39 @@ public sealed class GroupsConverter : JsonConverter<Groups>
     /// <inheritdoc />
     public override Groups Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        // Make sure we're reading a string
-        if (reader.TokenType is not JsonTokenType.String) throw new JsonException("Expected string.");
+        return reader.TokenType is JsonTokenType.String ? ReadInternal(reader.GetString()) : throw new JsonException("Expected string.");
+    }
 
+    /// <inheritdoc />
+    public override Groups ReadAsPropertyName(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        return reader.TokenType is JsonTokenType.PropertyName ? ReadInternal(reader.GetString()) : throw new JsonException("Expected string.");
+    }
+
+    /// <inheritdoc />
+    public override void Write(Utf8JsonWriter writer, Groups value, JsonSerializerOptions options)
+    {
+        writer.WriteStringValue(WriteInternal(value));
+    }
+
+    /// <inheritdoc />
+    public override void WriteAsPropertyName(Utf8JsonWriter writer, Groups value, JsonSerializerOptions options)
+    {
+        writer.WritePropertyName(WriteInternal(value));
+    }
+    #endregion
+
+    #region Methods
+    /// <summary>
+    /// Reads the groups value from a serialized Json version
+    /// </summary>
+    /// <param name="value">Value to read</param>
+    /// <returns>The deserialization of the Groups value</returns>
+    private static Groups ReadInternal(string? value)
+    {
         // Create empty Groups
         Groups groups = new();
-        string? value = reader.GetString()?.Trim();
+        value = value?.Trim();
         if (string.IsNullOrEmpty(value)) return groups;
 
         // Check how many groups are in the list
@@ -46,17 +73,11 @@ public sealed class GroupsConverter : JsonConverter<Groups>
         return groups;
     }
 
-    /// <inheritdoc />
-    public override void Write(Utf8JsonWriter writer, Groups value, JsonSerializerOptions options)
-    {
-        // Get names string and write it
-        string names = value.Names.Count switch
-        {
-            0 => string.Empty,
-            1 => value.Names[0],
-            _ => string.Join(", ", value.Names)
-        };
-        writer.WriteStringValue(names);
-    }
+    /// <summary>
+    /// Writes the groups value as a string
+    /// </summary>
+    /// <param name="value">Value to write</param>
+    /// <returns>The Json serialization of <paramref name="value"/></returns>
+    private static string WriteInternal(Groups value) => string.Join(", ", value.Names);
     #endregion
 }

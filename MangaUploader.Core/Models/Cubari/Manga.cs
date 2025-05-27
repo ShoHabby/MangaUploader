@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 using JetBrains.Annotations;
 using MangaUploader.Core.Converters;
@@ -9,7 +10,7 @@ namespace MangaUploader.Core.Models.Cubari;
 /// <summary>
 /// Manga series model
 /// </summary>
-[PublicAPI]
+[PublicAPI, DebuggerDisplay("Manga: \"{Title}\"")]
 public sealed partial class Manga
 {
     /// <summary>

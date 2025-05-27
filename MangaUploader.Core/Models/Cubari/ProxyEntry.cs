@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Diagnostics;
+using System.Text.RegularExpressions;
 using FastEnumUtility;
 using JetBrains.Annotations;
 
@@ -13,7 +14,7 @@ public sealed partial class ProxyTypeBooster;
 /// <summary>
 /// Proxy chapter entry model
 /// </summary>
-[PublicAPI]
+[PublicAPI, DebuggerDisplay("{Type} Proxy ({ID})")]
 public sealed partial class ProxyEntry : Entry
 {
     /// <summary>
