@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 using JetBrains.Annotations;
 using MangaUploader.Core.Converters;
@@ -9,10 +10,27 @@ namespace MangaUploader.Core.Models.Cubari;
 /// <summary>
 /// Manga chapter model
 /// </summary>
-[PublicAPI]
+[PublicAPI, DebuggerDisplay("{DebuggerDisplay,nq}")]
 public sealed class Chapter
 {
     #region Properties
+    /// <summary>
+    /// Debugger display
+    /// </summary>
+    [JsonIgnore, DebuggerBrowsable(DebuggerBrowsableState.Never)]
+    private string DebuggerDisplay
+    {
+        get
+        {
+            string display = string.IsNullOrEmpty(this.Title) ? "Chapter" : $"Chapter: \"{this.Title}\"";
+            if (this.Volume is not null)
+            {
+                display = $"Vol. {this.Volume} {display}";
+            }
+            return display;
+        }
+    }
+
     /// <summary>
     /// Chapter title
     /// </summary>

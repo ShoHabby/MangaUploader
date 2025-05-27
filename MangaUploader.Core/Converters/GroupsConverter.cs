@@ -78,11 +78,6 @@ public sealed class GroupsConverter : JsonConverter<Groups>
     /// </summary>
     /// <param name="value">Value to write</param>
     /// <returns>The Json serialization of <paramref name="value"/></returns>
-    private static string WriteInternal(Groups value) => value.Names.Count switch
-    {
-        0 => string.Empty,
-        1 => value.Names[0],
-        _ => string.Join(", ", value.Names)
-    };
+    private static string WriteInternal(Groups value) => string.Join(", ", value.Names);
     #endregion
 }
