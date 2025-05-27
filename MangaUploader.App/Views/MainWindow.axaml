@@ -6,6 +6,7 @@
         xmlns:b="clr-namespace:MangaUploader.Core.Behaviours;assembly=MangaUploader.Core"
         xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
         xmlns:ail="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
+        xmlns:li="using:LoadingIndicators.Avalonia"
         x:CompileBindings="True" mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="800"
         MinWidth="300" MinHeight="400" Padding="10"
         x:Class="MangaUploader.Views.MainWindow"
@@ -17,27 +18,54 @@
         <vm:MainWindowViewModel />
     </Design.DataContext>
 
-    <DockPanel LastChildFill="True" VerticalSpacing="5">
-        <DockPanel DockPanel.Dock="Top" HorizontalSpacing="10">
-            <Border DockPanel.Dock="Left" ClipToBounds="True" CornerRadius="{Binding AvatarCornerRadius}">
-                <ail:AdvancedImage Source="{Binding User.AvatarURL}" Width="{Binding AvatarSize}" Height="{Binding AvatarSize}" />
-            </Border>
-            <TextBlock DockPanel.Dock="Left" Text="{Binding User.Login}" VerticalAlignment="Center" />
-            <Button DockPanel.Dock="Right" Command="{Binding ConnectCommand}"
-                    Content="{Binding ConnectButtonText}" HorizontalContentAlignment="Center"
-                    Width="80" HorizontalAlignment="Center" VerticalAlignment="Center" />
-            <TextBlock DockPanel.Dock="Right" Text="{Binding DeviceFlowCode}"
-                       VerticalAlignment="Center" HorizontalAlignment="Right" />
-        </DockPanel>
-        <Label DockPanel.Dock="Top" Content="Repositories" Target="RepositoriesAutoCompleteBox" />
-        <AutoCompleteBox DockPanel.Dock="Top" Name="RepositoriesAutoCompleteBox" ItemsSource="{Binding Repositories}"
-                         FilterMode="ContainsOrdinal" SelectedItem="{Binding SelectedRepository}">
-            <i:Interaction.Behaviors>
-                <b:DropdownItemsOnlyBehaviour/>
-            </i:Interaction.Behaviors>
-        </AutoCompleteBox>
-        <TextBlock DockPanel.Dock="Bottom" Text="{Binding SelectedRepoName}" />
-        <Button Content="Test Serialization" Command="{Binding TestSerializationCommand}" HorizontalAlignment="Center" />
-    </DockPanel>
+    <TabControl>
+        <TabItem Header="GitHub" Padding="5">
+            <DockPanel>
+                <DockPanel DockPanel.Dock="Top" LastChildFill="False" HorizontalSpacing="10">
+                    <Border DockPanel.Dock="Left" CornerRadius="{Binding AvatarCornerRadius}"
+                            BorderThickness="1" BorderBrush="{DynamicResource SystemBaseMediumHighColor}">
+                        <Border ClipToBounds="True" CornerRadius="{Binding AvatarCornerRadius}">
+                            <ail:AdvancedImage Source="{Binding User.AvatarURL}" Width="{Binding AvatarSize}" Height="{Binding AvatarSize}"
+                                               VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                        </Border>
+                    </Border>
+                    <TextBlock DockPanel.Dock="Left" Text="{Binding User.Login}" VerticalAlignment="Center" />
+                    <Button DockPanel.Dock="Right" Command="{Binding ConnectCommand}"
+                            Content="{Binding ConnectButtonText}" HorizontalContentAlignment="Center"
+                            Width="80" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <TextBlock DockPanel.Dock="Right" Text="{Binding DeviceFlowCode}"
+                               VerticalAlignment="Center" HorizontalAlignment="Right" />
+                </DockPanel>
+                <Panel>
+                    <li:LoadingIndicator IsActive="{Binding IsLoading}" Mode="Ring" SpeedRatio="0.7"
+                                         Width="100" Height="100" Foreground="{DynamicResource SystemAccentColorDark1}"
+                                         HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    <Border BorderBrush="{DynamicResource SystemAccentColor}"
+                            CornerRadius="5" BorderThickness="1" Margin="5" Padding="5"
+                            VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                        <StackPanel Spacing="5" VerticalAlignment="Top" HorizontalAlignment="Stretch">
+                            <StackPanel.IsEnabled>
+                                <MultiBinding Converter="{x:Static BoolConverters.And}">
+                                    <Binding Path="!IsLoading"/>
+                                    <Binding Path="IsAuthenticated"/>
+                                </MultiBinding>
+                            </StackPanel.IsEnabled>
+                            <Label Content="Repositories" Target="RepositoriesAutoCompleteBox" />
+                            <AutoCompleteBox Name="RepositoriesAutoCompleteBox" ItemsSource="{Binding Repositories}"
+                                             FilterMode="ContainsOrdinal" SelectedItem="{Binding SelectedRepository}">
+                                <i:Interaction.Behaviors>
+                                    <b:DropdownItemsOnlyBehaviour/>
+                                </i:Interaction.Behaviors>
+                                <AutoCompleteBox.InnerRightContent>
+                                    <Button Content="Fetch" Command="{Binding FetchSelectedRepoCommand}" Margin="2"/>
+                                </AutoCompleteBox.InnerRightContent>
+                            </AutoCompleteBox>
+                            <Button Content="Test Serialization" Command="{Binding TestSerializationCommand}" HorizontalAlignment="Center" />
+                        </StackPanel>
+                    </Border>
+                </Panel>
+            </DockPanel>
+        </TabItem>
+    </TabControl>
 
 </Window>

@@ -53,6 +53,7 @@
         <PackageReference Include="Devlooped.CredentialManager" Version="2.6.1" />
         <PackageReference Include="HanumanInstitute.MvvmDialogs" Version="2.1.0" />
         <PackageReference Include="HanumanInstitute.MvvmDialogs.Avalonia" Version="2.1.0" />
+        <PackageReference Include="LoadingIndicators.Avalonia" Version="11.0.11.1" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.5" />
         <PackageReference Include="Octokit" Version="14.0.0" />
         <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.5" />

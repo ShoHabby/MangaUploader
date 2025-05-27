@@ -53,7 +53,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <summary>
     /// Connect button text
     /// </summary>
-    public string ConnectButtonText => this.GitHubService?.IsAuthenticated ?? false ? "Logout" : "Login";
+    public string ConnectButtonText => this.IsAuthenticated ? "Logout" : "Login";
     /// <summary>
     /// Current device flow code
     /// </summary>
@@ -67,12 +67,18 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <summary>
     /// Selected repository
     /// </summary>
-    [ObservableProperty, NotifyPropertyChangedFor(nameof(SelectedRepoName))]
+    [ObservableProperty]
     public partial RepositoryInfo? SelectedRepository { get; set; }
     /// <summary>
-    /// Selected repository name
+    /// If the GitHub client is currently authenticated
     /// </summary>
-    public string SelectedRepoName => this.SelectedRepository?.Name ?? string.Empty;
+    [ObservableProperty, NotifyPropertyChangedFor(nameof(ConnectButtonText))]
+    public partial bool IsAuthenticated { get; set; }
+    /// <summary>
+    /// If we're currently loading some data
+    /// </summary>
+    [ObservableProperty]
+    public partial bool IsLoading { get; set; }
     #endregion
 
     #region Constructors
@@ -101,7 +107,8 @@ public sealed partial class MainWindowViewModel : ViewModelBase
             // If some credentials are saved, try connecting
             if (this.GitHubService.HasSavedCredentials())
             {
-                this.ConnectCommand.ExecuteAsync(null).Forget();
+                this.ConnectCommand.Execute(null);
+                this.ConnectCommand.NotifyCanExecuteChanged();
             }
         }
     }
@@ -122,7 +129,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <summary>
     /// Connects to the GitHub Service
     /// </summary>
-    [RelayCommand(AllowConcurrentExecutions = false)]
+    [RelayCommand]
     private async Task Connect()
     {
         if (this.GitHubService is null) return;
@@ -131,21 +138,24 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         if (this.GitHubService.IsAuthenticated)
         {
             this.GitHubService.Disconnect();
-            this.User = UserInfo.Default;
-            OnPropertyChanged(nameof(this.ConnectButtonText));
+            this.User            = UserInfo.Default;
+            this.IsAuthenticated = false;
             return;
         }
 
         // Try authenticating to client
-        this.User = await this.GitHubService.Authenticate() ?? UserInfo.Default;
-        this.DeviceFlowCode = string.Empty;
-        OnPropertyChanged(nameof(this.ConnectButtonText));
+        this.IsLoading       = true;
+        this.User            = await this.GitHubService.Authenticate() ?? UserInfo.Default;
+        this.DeviceFlowCode  = string.Empty;
+        this.IsAuthenticated = this.GitHubService.IsAuthenticated;
 
         // Fetch user's repos if authentication was a success
         if (this.GitHubService.IsAuthenticated)
         {
             FetchRepositories().Forget();   // Running in a separate task to clear up the execution on this command
         }
+
+        this.IsLoading = false;
     }
 
     [RelayCommand]
@@ -161,6 +171,12 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         if (newData is null) return;
 
         File.WriteAllText("Testing/SerializedTest.json", newData);
+    }
+
+    [RelayCommand]
+    private async Task FetchSelectedRepo()
+    {
+        await Task.Delay(1000);
     }
     #endregion
 
