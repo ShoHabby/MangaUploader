@@ -1,8 +1,6 @@
-﻿using System;
-using System.Text.Encodings.Web;
+﻿using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using MangaUploader.Core.Extensions.Logging;
 using MangaUploader.Core.Models.Cubari;
 using MangaUploader.Core.Services;
 
@@ -35,9 +33,8 @@ public sealed class CubariService : ICubariService
         {
             return JsonSerializer.Deserialize<Manga>(data, this.Options);
         }
-        catch (Exception e)
+        catch
         {
-            e.LogException();
             return null;
         }
     }
@@ -49,9 +46,8 @@ public sealed class CubariService : ICubariService
         {
             return JsonSerializer.Serialize(manga, this.Options);
         }
-        catch (Exception e)
+        catch
         {
-            e.LogException();
             return null;
         }
     }

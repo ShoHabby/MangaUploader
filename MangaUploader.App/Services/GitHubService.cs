@@ -9,6 +9,7 @@ using MangaUploader.Core.Extensions.Collections;
 using MangaUploader.Core.Extensions.Logging;
 using MangaUploader.Core.Extensions.Strings;
 using MangaUploader.Core.Models;
+using MangaUploader.Core.Models.Cubari;
 using MangaUploader.Core.Services;
 using Octokit;
 
@@ -19,7 +20,8 @@ namespace MangaUploader.Services;
 /// <summary>
 /// GitHub Service implementation
 /// </summary>
-public sealed class GitHubService : IGitHubService
+/// <param name="cubariService">Cubari payload service</param>
+public sealed class GitHubService(ICubariService cubariService) : IGitHubService
 {
     /// <summary>
     /// Where the credentials where fetched from
@@ -60,16 +62,17 @@ public sealed class GitHubService : IGitHubService
     /// Credentials manager
     /// </summary>
     private GitCredentialManager.ICredentialStore Vault { get; } = CredentialManager.Create(PRODUCT);
+    /// <summary>
+    /// Cubari payload service
+    /// </summary>
+    private ICubariService CubariService { get; } = cubariService;
+    /// <inheritdoc />
+    public bool IsAuthenticated { get; private set; }
     #endregion
 
     #region Events
     /// <inheritdoc />
     public event DeviceFlowCodeDelegate? OnDeviceFlowCodeAvailable;
-    #endregion
-
-    #region Properties
-    /// <inheritdoc />
-    public bool IsAuthenticated { get; private set; }
     #endregion
 
     #region Methods
@@ -198,6 +201,62 @@ public sealed class GitHubService : IGitHubService
         }
 
         return reposBuilder.ToImmutable();
+    }
+
+    /// <inheritdoc />
+    /// ReSharper disable once CognitiveComplexity
+    public async Task<ImmutableArray<MangaFileInfo>> FetchRepoMangaContents(long repositoryId)
+    {
+        // Get top level content of repository
+        Queue<RepositoryContent> contentsToExplore = new();
+        List<string> jsonFiles = [];
+        IReadOnlyList<RepositoryContent> contents = await this.Client.Repository.Content.GetAllContents(repositoryId);
+        foreach (RepositoryContent exploring in contents)
+        {
+            contentsToExplore.Enqueue(exploring);
+        }
+
+        // Explore entire repository recursively
+        while (contentsToExplore.TryDequeue(out RepositoryContent? content))
+        {
+            // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
+            switch (content.Type.Value)
+            {
+                // Cache json files
+                case ContentType.File when content.Name.EndsWith(".json"):
+                    jsonFiles.Add(content.Path);
+                    break;
+
+                // Add directories contents to exploration list
+                case ContentType.Dir:
+                    contents = await this.Client.Repository.Content.GetAllContents(repositoryId, content.Path);
+                    foreach (RepositoryContent exploring in contents)
+                    {
+                        contentsToExplore.Enqueue(exploring);
+                    }
+                    break;
+            }
+        }
+
+        // Build out manga files
+        ImmutableArray<MangaFileInfo>.Builder mangaContents = ImmutableArray.CreateBuilder<MangaFileInfo>();
+        foreach (string filePath in jsonFiles)
+        {
+            // Fetch file contents
+            contents = await this.Client.Repository.Content.GetAllContents(repositoryId, filePath);
+            if (contents.Count is not 1) continue;
+
+            // Try converting to manga payload, add if successful
+            RepositoryContent file = contents[0];
+            Manga? manga = this.CubariService.DeserializeManga(file.Content);
+            if (manga is not null)
+            {
+                mangaContents.Add(new MangaFileInfo(file.Path, file.Sha, repositoryId, manga));
+            }
+        }
+
+        // Return all valid files
+        return mangaContents.ToImmutable();
     }
 
     /// <inheritdoc />

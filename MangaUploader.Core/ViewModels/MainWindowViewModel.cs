@@ -6,6 +6,7 @@ using Avalonia;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using JetBrains.Annotations;
+using MangaUploader.Core.Extensions.Logging;
 using MangaUploader.Core.Extensions.Tasks;
 using MangaUploader.Core.Models;
 using MangaUploader.Core.Models.Cubari;
@@ -67,8 +68,12 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <summary>
     /// Selected repository
     /// </summary>
-    [ObservableProperty]
+    [ObservableProperty, NotifyCanExecuteChangedFor(nameof(FetchSelectedRepoCommand))]
     public partial RepositoryInfo? SelectedRepository { get; set; }
+    /// <summary>
+    /// If a valid repository is selected
+    /// </summary>
+    public bool HasSelectedRepository => this.SelectedRepository is not null;
     /// <summary>
     /// If the GitHub client is currently authenticated
     /// </summary>
@@ -158,6 +163,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         this.IsLoading = false;
     }
 
+    /// <summary>
+    /// Json serialization/deserialization test
+    /// </summary>
     [RelayCommand]
     private void TestSerialization()
     {
@@ -173,10 +181,21 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         File.WriteAllText("Testing/SerializedTest.json", newData);
     }
 
-    [RelayCommand]
+    /// <summary>
+    /// Fetches the data from the selected repository
+    /// </summary>
+    [RelayCommand(CanExecute = nameof(HasSelectedRepository))]
     private async Task FetchSelectedRepo()
     {
-        await Task.Delay(1000);
+        if (this.GitHubService is null) return;
+
+        this.IsLoading = true;
+        ImmutableArray<MangaFileInfo> mangas = await this.GitHubService.FetchRepoMangaContents(this.SelectedRepository!.Value.ID);
+        foreach (MangaFileInfo manga in mangas)
+        {
+            await this.LogAsync($"File Path: {manga.Path} SHA: {manga.SHA} Repository ID: {manga.RepositoryID} Title: {manga.Manga.Title}");
+        }
+        this.IsLoading = false;
     }
     #endregion
 
@@ -186,9 +205,12 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// </summary>
     private async Task FetchRepositories()
     {
-        if (this.GitHubService is not null)
+        if (this.GitHubService is null) { }
+        else
         {
+            this.IsLoading    = true;
             this.Repositories = await this.GitHubService.FetchPublicRepos() ?? ImmutableArray<RepositoryInfo>.Empty;
+            this.IsLoading    = false;
         }
     }
     #endregion

@@ -34,9 +34,9 @@ public static class LoggingExtensions
     /// Logs an exception console
     /// </summary>
     /// <param name="exception">Exception to log</param>
-    public static void LogException(this Exception exception) => Console.Error.WriteLine($"[{exception.GetType().Name}]: {exception.Message}\n{exception.StackTrace}");
+    public static void LogException(this Exception exception) => Console.Error.WriteLine($"[{exception.GetType().Name}]: {exception.Message}\r\n{exception.StackTrace}");
 
     /// <inheritdoc cref="LogException"/>
-    public static async Task LogExceptionAsync(this Exception exception) => await Console.Error.WriteLineAsync($"[{exception.GetType().Name}]: {exception.Message}\n{exception.StackTrace}");
+    public static async Task LogExceptionAsync(this Exception exception) => await Console.Error.WriteLineAsync($"[{exception.GetType().Name}]: {exception.Message}\r\n{exception.StackTrace}");
     #endregion
 }

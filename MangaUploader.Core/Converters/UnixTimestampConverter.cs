@@ -15,6 +15,8 @@ public sealed class UnixTimestampConverter : JsonConverter<DateTimeOffset>
     public override DateTimeOffset Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         string? value = reader.GetString();
+        if (value is null) throw new JsonException("Could not read string.");
+
         return long.TryParse(value, out long timestamp) ? DateTimeOffset.FromUnixTimeSeconds(timestamp).ToLocalTime() : DateTimeOffset.UnixEpoch.ToLocalTime();
     }
 

@@ -53,6 +53,13 @@ public interface IGitHubService
     Task<ImmutableArray<RepositoryInfo>?> FetchPublicRepos();
 
     /// <summary>
+    /// Fetches the specified repository and retrieves its manga contents
+    /// </summary>
+    /// <param name="repositoryId">Repository ID to fetch</param>
+    /// <returns>The manga file contents of the repository</returns>
+    Task<ImmutableArray<MangaFileInfo>> FetchRepoMangaContents(long repositoryId);
+
+    /// <summary>
     /// Disconnect from GitHub client
     /// </summary>
     void Disconnect();
