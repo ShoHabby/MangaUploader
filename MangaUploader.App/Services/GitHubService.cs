@@ -30,7 +30,7 @@ public sealed class GitHubService(ICubariService cubariService) : IGitHubService
     {
         None,
         Vault,
-        Oauth,
+        Oauth
     }
 
     #region Constants
@@ -208,15 +208,15 @@ public sealed class GitHubService(ICubariService cubariService) : IGitHubService
     public async Task<ImmutableArray<MangaFileInfo>> FetchRepoMangaContents(long repositoryId)
     {
         // Get top level content of repository
-        Queue<RepositoryContent> contentsToExplore = new();
-        List<string> jsonFiles = [];
         IReadOnlyList<RepositoryContent> contents = await this.Client.Repository.Content.GetAllContents(repositoryId);
+        Queue<RepositoryContent> contentsToExplore = new(contents.Count);
         foreach (RepositoryContent exploring in contents)
         {
             contentsToExplore.Enqueue(exploring);
         }
 
         // Explore entire repository recursively
+        List<string> jsonFiles = [];
         while (contentsToExplore.TryDequeue(out RepositoryContent? content))
         {
             // ReSharper disable once SwitchStatementMissingSomeEnumCasesNoDefault
@@ -239,7 +239,7 @@ public sealed class GitHubService(ICubariService cubariService) : IGitHubService
         }
 
         // Build out manga files
-        ImmutableArray<MangaFileInfo>.Builder mangaContents = ImmutableArray.CreateBuilder<MangaFileInfo>();
+        ImmutableArray<MangaFileInfo>.Builder mangaContents = ImmutableArray.CreateBuilder<MangaFileInfo>(jsonFiles.Count);
         foreach (string filePath in jsonFiles)
         {
             // Fetch file contents

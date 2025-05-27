@@ -48,7 +48,7 @@ public sealed class DropdownItemsOnlyBehaviour : Behavior<AutoCompleteBox>
     /// </summary>
     private void ShowDropdown()
     {
-        if (this.AssociatedObject is not { IsDropDownOpen: false }) return;
+        if (this.AssociatedObject is null or { IsDropDownOpen: true } or { SelectedItem: not null }) return;
 
         this.AssociatedObject.PopulateDropDown(this.AssociatedObject, EventArgs.Empty);
         this.AssociatedObject.OpeningDropDown(false);

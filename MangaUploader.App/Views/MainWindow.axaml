@@ -51,16 +51,16 @@
                                 </MultiBinding>
                             </StackPanel.IsEnabled>
                             <Label Content="Repositories" Target="RepositoriesAutoCompleteBox" />
-                            <DockPanel HorizontalAlignment="Stretch" HorizontalSpacing="2">
-                                <Button DockPanel.Dock="Right" Content="Fetch" Command="{Binding FetchSelectedRepoCommand}" />
-                                <AutoCompleteBox Name="RepositoriesAutoCompleteBox" ItemsSource="{Binding Repositories}"
-                                                 FilterMode="ContainsOrdinal" SelectedItem="{Binding SelectedRepository}"
-                                                 VerticalAlignment="Center">
-                                    <i:Interaction.Behaviors>
-                                        <b:DropdownItemsOnlyBehaviour/>
-                                    </i:Interaction.Behaviors>
-                                </AutoCompleteBox>
-                            </DockPanel>
+                            <AutoCompleteBox Name="RepositoriesAutoCompleteBox" ItemsSource="{Binding Repositories}"
+                                             FilterMode="ContainsOrdinal" SelectedItem="{Binding SelectedRepository}"
+                                             Padding="8" VerticalAlignment="Center">
+                                <i:Interaction.Behaviors>
+                                    <b:DropdownItemsOnlyBehaviour/>
+                                </i:Interaction.Behaviors>
+                                <AutoCompleteBox.InnerRightContent>
+                                    <Button Content="Fetch" Command="{Binding FetchSelectedRepoCommand}" Margin="2" />
+                                </AutoCompleteBox.InnerRightContent>
+                            </AutoCompleteBox>
                             <Button Content="Test Serialization" Command="{Binding TestSerializationCommand}" HorizontalAlignment="Center" />
                         </StackPanel>
                     </Border>
