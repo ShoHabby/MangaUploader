@@ -34,21 +34,20 @@ public sealed class Chapter
     /// <summary>
     /// Chapter title
     /// </summary>
-    public string Title { get; set; } = string.Empty;
+    public required string Title { get; set; }
     /// <summary>
     /// Volume number
     /// </summary>
     [JsonConverter(typeof(NullableNumberToStringConverter<decimal>))]
-    public decimal? Volume { get; set; }
+    public required decimal? Volume { get; set; }
     /// <summary>
     /// Chapter last updated timestamp
     /// </summary>
     [JsonConverter(typeof(UnixTimestampConverter))]
-    public DateTimeOffset LastUpdated { get; set; } = DateTimeOffset.UnixEpoch.ToLocalTime();
+    public required DateTimeOffset LastUpdated { get; set; }
     /// <summary>
     /// Chapter entries per group
     /// </summary>
-    [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
-    public OrderedDictionary<Groups, Entry> Groups { get; } = [];
+    public required OrderedDictionary<Groups, Entry> Groups { get; init; }
     #endregion
 }

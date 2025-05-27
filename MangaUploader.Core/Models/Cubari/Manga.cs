@@ -26,28 +26,27 @@ public sealed partial class Manga
     /// <summary>
     /// Manga title
     /// </summary>
-    public string Title { get; set; } = string.Empty;
+    public required string Title { get; set; }
     /// <summary>
     /// Manga description
     /// </summary>
-    public string Description { get; set; } = string.Empty;
+    public required string Description { get; set; }
     /// <summary>
     /// Artist name
     /// </summary>
-    public string Artist { get; set; } = string.Empty;
+    public required string Artist { get; set; }
     /// <summary>
     /// Author name
     /// </summary>
-    public string Author { get; set; } = string.Empty;
+    public required string Author { get; set; }
     /// <summary>
     /// Cover page URL
     /// </summary>
     [JsonConverter(typeof(NullToStringConverter<Uri>))]
-    public Uri? Cover { get; set; }
+    public required Uri? Cover { get; set; }
     /// <summary>
     /// Manga chapters
     /// </summary>
-    [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
-    public SortedDictionary<decimal, Chapter> Chapters { get; } = [];
+    public required SortedDictionary<decimal, Chapter> Chapters { get; init; }
     #endregion
 }
