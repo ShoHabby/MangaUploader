@@ -61,6 +61,7 @@ public sealed class App : Application
         services.AddSingleton<IGitHubService, GitHubService>();
         services.AddSingleton<IClipboardService, ClipboardService>();
         services.AddSingleton<ICubariService, CubariService>();
+        services.AddSingleton<ISavedDataService, SettingsSavedDataService>();
 
         // Add VM transients
         services.AddTransient<MainWindowViewModel>();

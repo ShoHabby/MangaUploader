@@ -45,5 +45,17 @@ namespace MangaUploader {
                 this["Height"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string SelectedRepository {
+            get {
+                return ((string)(this["SelectedRepository"]));
+            }
+            set {
+                this["SelectedRepository"] = value;
+            }
+        }
     }
 }

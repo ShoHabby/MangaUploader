@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Immutable;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -30,7 +31,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     public static CornerRadius AvatarCornerRadius => new(AvatarSize);
     #endregion
 
-    #region DI Properties
+    #region Services
     /// <summary>
     /// Current GitHub Service
     /// </summary>
@@ -43,6 +44,10 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// Current Cubari service
     /// </summary>
     private ICubariService? CubariService { get; }
+    /// <summary>
+    /// Current SavedData service
+    /// </summary>
+    private ISavedDataService? SavedDataService { get; }
     #endregion
 
     #region Observable Properties
@@ -90,7 +95,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <summary>
     /// Default constructor for AppBuilder
     /// </summary>
-    public MainWindowViewModel() : this(null, null, null) { }
+    public MainWindowViewModel() : this(null, null, null, null) { }
 
     /// <summary>
     /// DI Constructor
@@ -98,12 +103,14 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <param name="gitHubService">Current GitHub Service</param>
     /// <param name="clipboardService">Current Clipboard service</param>
     /// <param name="cubariService">Current Cubari service</param>
+    /// <param name="savedDataService">Current SavedData service</param>
     [UsedImplicitly(ImplicitUseKindFlags.InstantiatedWithFixedConstructorSignature)]
-    public MainWindowViewModel(IGitHubService? gitHubService, IClipboardService? clipboardService, ICubariService? cubariService)
+    public MainWindowViewModel(IGitHubService? gitHubService, IClipboardService? clipboardService, ICubariService? cubariService, ISavedDataService? savedDataService)
     {
         this.GitHubService    = gitHubService;
         this.ClipboardService = clipboardService;
         this.CubariService    = cubariService;
+        this.SavedDataService = savedDataService;
 
         if (this.GitHubService is not null)
         {
@@ -153,14 +160,13 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         this.User            = await this.GitHubService.Authenticate() ?? UserInfo.Default;
         this.DeviceFlowCode  = string.Empty;
         this.IsAuthenticated = this.GitHubService.IsAuthenticated;
+        this.IsLoading       = false;
 
         // Fetch user's repos if authentication was a success
         if (this.GitHubService.IsAuthenticated)
         {
             FetchRepositories().Forget();   // Running in a separate task to clear up the execution on this command
         }
-
-        this.IsLoading = false;
     }
 
     /// <summary>
@@ -205,12 +211,20 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// </summary>
     private async Task FetchRepositories()
     {
-        if (this.GitHubService is null) { }
-        else
+        if (this.GitHubService is null) return;
+
+        this.IsLoading    = true;
+        this.Repositories = await this.GitHubService.FetchPublicRepos() ?? ImmutableArray<RepositoryInfo>.Empty;
+        this.IsLoading    = false;
+
+        if (!string.IsNullOrEmpty(this.SavedDataService?.SavedRepositoryName))
         {
-            this.IsLoading    = true;
-            this.Repositories = await this.GitHubService.FetchPublicRepos() ?? ImmutableArray<RepositoryInfo>.Empty;
-            this.IsLoading    = false;
+            this.SelectedRepository = this.Repositories.FirstOrDefault(r => r.Name == this.SavedDataService.SavedRepositoryName);
+            if (this.SelectedRepository is not null)
+            {
+                this.FetchSelectedRepoCommand.Execute(null);
+                this.FetchSelectedRepoCommand.NotifyCanExecuteChanged();
+            }
         }
     }
     #endregion

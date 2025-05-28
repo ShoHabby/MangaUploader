@@ -10,6 +10,9 @@
     <Setting Name="Height" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">800</Value>
     </Setting>
+    <Setting Name="SelectedRepository" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
   </Settings>
 </SettingsFile>
 
