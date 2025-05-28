@@ -1,8 +1,7 @@
 using HanumanInstitute.MvvmDialogs.Avalonia;
 using MangaUploader.Core.ViewModels;
-using MangaUploader.Views;
 
-namespace MangaUploader;
+namespace MangaUploader.Views;
 
 /// <summary>
 /// ViewModel locator
