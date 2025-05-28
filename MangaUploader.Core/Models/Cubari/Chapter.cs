@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
 using JetBrains.Annotations;
-using MangaUploader.Core.Converters;
+using MangaUploader.Core.Json.Converters;
 
 namespace MangaUploader.Core.Models.Cubari;
 

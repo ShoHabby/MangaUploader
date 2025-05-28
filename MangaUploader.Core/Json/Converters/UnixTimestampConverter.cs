@@ -3,7 +3,7 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace MangaUploader.Core.Converters;
+namespace MangaUploader.Core.Json.Converters;
 
 /// <summary>
 /// Unix timestamp converter

@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 using MangaUploader.Core.Extensions.Strings;
 using MangaUploader.Core.Models.Cubari;
 
-namespace MangaUploader.Core.Converters;
+namespace MangaUploader.Core.Json.Converters;
 
 /// <summary>
 /// Chapter entry converter

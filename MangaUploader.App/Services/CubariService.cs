@@ -1,6 +1,7 @@
 ﻿using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using MangaUploader.Core.Json;
 using MangaUploader.Core.Models.Cubari;
 using MangaUploader.Core.Services;
 
@@ -20,7 +21,7 @@ public sealed class CubariService : ICubariService
         Encoder              = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         NumberHandling       = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString,
         PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower,
-        TypeInfoResolver     = Manga.MangaSourceGenerationContext.Default,
+        TypeInfoResolver     = MangaSourceGenerationContext.Default,
         WriteIndented        = true
     };
     #endregion

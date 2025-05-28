@@ -1,5 +1,5 @@
 ﻿using System.Text.Json.Serialization;
-using MangaUploader.Core.Converters;
+using MangaUploader.Core.Json.Converters;
 
 namespace MangaUploader.Core.Models.Cubari;
 

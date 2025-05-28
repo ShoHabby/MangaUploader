@@ -3,7 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using MangaUploader.Core.Models.Cubari;
 
-namespace MangaUploader.Core.Converters;
+namespace MangaUploader.Core.Json.Converters;
 
 /// <summary>
 /// Groups JSON converter

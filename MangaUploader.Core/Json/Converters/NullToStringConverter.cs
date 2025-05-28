@@ -1,16 +1,14 @@
 ﻿using System;
-using System.Globalization;
-using System.Numerics;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using MangaUploader.Core.Extensions.Json;
 
-namespace MangaUploader.Core.Converters;
+namespace MangaUploader.Core.Json.Converters;
 
 /// <summary>
-/// Converter handling nullable numbers
+/// Null value to empty string converter
 /// </summary>
-/// <typeparam name="T">Number type</typeparam>
-public sealed class NullableNumberToStringConverter<T> : JsonConverter<T?> where T : struct, INumber<T>
+public sealed class NullToStringConverter<T> : JsonConverter<T?> where T : class
 {
     #region Properties
     /// <inheritdoc />
@@ -28,11 +26,21 @@ public sealed class NullableNumberToStringConverter<T> : JsonConverter<T?> where
         {
             null => throw new JsonException("Could not read string value."),
             ""   => null,
-            _    => T.TryParse(value, CultureInfo.InvariantCulture, out T result) ? result : throw new JsonException("Could not parse number correctly.")
+            _    => options.GetConverter<T>().Read(ref reader, typeToConvert, options)
         };
     }
 
     /// <inheritdoc />
-    public override void Write(Utf8JsonWriter writer, T? value, JsonSerializerOptions options) => writer.WriteStringValue(value.ToString());
+    public override void Write(Utf8JsonWriter writer, T? value, JsonSerializerOptions options)
+    {
+        if (value is not null)
+        {
+            options.GetConverter<T>().Write(writer, value, options);
+        }
+        else
+        {
+            writer.WriteStringValue(string.Empty);
+        }
+    }
     #endregion
 }
