@@ -33,21 +33,21 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     #region Services
     /// <summary>
-    /// Current GitHub Service
+    /// Injected GitHub Service
     /// </summary>
     private IGitHubService? GitHubService { get; }
     /// <summary>
-    /// Current Clipboard service
+    /// Injected Clipboard service
     /// </summary>
     private IClipboardService? ClipboardService { get; }
     /// <summary>
-    /// Current Cubari service
+    /// Injected Cubari service
     /// </summary>
     private ICubariService? CubariService { get; }
     /// <summary>
-    /// Current SavedData service
+    /// Injected Application Settings service
     /// </summary>
-    private ISavedDataService? SavedDataService { get; }
+    private IAppSettingsService? AppSettingsService { get; }
     #endregion
 
     #region Observable Properties
@@ -100,17 +100,17 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <summary>
     /// DI Constructor
     /// </summary>
-    /// <param name="gitHubService">Current GitHub Service</param>
-    /// <param name="clipboardService">Current Clipboard service</param>
-    /// <param name="cubariService">Current Cubari service</param>
-    /// <param name="savedDataService">Current SavedData service</param>
+    /// <param name="gitHubService">Injected GitHub Service</param>
+    /// <param name="clipboardService">Injected Clipboard service</param>
+    /// <param name="cubariService">Injected Cubari service</param>
+    /// <param name="appSettingsService">Injected Application Settings service</param>
     [UsedImplicitly(ImplicitUseKindFlags.InstantiatedWithFixedConstructorSignature)]
-    public MainWindowViewModel(IGitHubService? gitHubService, IClipboardService? clipboardService, ICubariService? cubariService, ISavedDataService? savedDataService)
+    public MainWindowViewModel(IGitHubService? gitHubService, IClipboardService? clipboardService, ICubariService? cubariService, IAppSettingsService? appSettingsService)
     {
         this.GitHubService    = gitHubService;
         this.ClipboardService = clipboardService;
         this.CubariService    = cubariService;
-        this.SavedDataService = savedDataService;
+        this.AppSettingsService = appSettingsService;
 
         if (this.GitHubService is not null)
         {
@@ -217,9 +217,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         this.Repositories = await this.GitHubService.FetchPublicRepos() ?? ImmutableArray<RepositoryInfo>.Empty;
         this.IsLoading    = false;
 
-        if (!string.IsNullOrEmpty(this.SavedDataService?.SavedRepositoryName))
+        if (!string.IsNullOrEmpty(this.AppSettingsService?.Settings.SavedRepositoryName))
         {
-            this.SelectedRepository = this.Repositories.FirstOrDefault(r => r.Name == this.SavedDataService.SavedRepositoryName);
+            this.SelectedRepository = this.Repositories.FirstOrDefault(r => r.Name == this.AppSettingsService.Settings.SavedRepositoryName);
             if (this.SelectedRepository is not null)
             {
                 this.FetchSelectedRepoCommand.Execute(null);

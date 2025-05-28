@@ -1,5 +1,7 @@
 using System;
+using System.Globalization;
 using Avalonia.Controls;
+using Avalonia.Input.Platform;
 
 namespace MangaUploader.Views;
 
@@ -21,22 +23,20 @@ public sealed partial class MainWindow : Window
     {
         base.OnOpened(e);
 
-        this.Width  = Settings.Default.Width;
-        this.Height = Settings.Default.Height;
+        this.Width  = App.Settings.WindowWidth;
+        this.Height = App.Settings.WindowHeight;
     }
 
     /// <inheritdoc />
     protected override void OnClosing(WindowClosingEventArgs e)
     {
-        Settings.Default.Width  = (int)Math.Round(this.Width);
-        Settings.Default.Height = (int)Math.Round(this.Height);
+        App.Settings.WindowWidth  = (int)Math.Round(this.Width);
+        App.Settings.WindowHeight = (int)Math.Round(this.Height);
 
         if (this.RepositoriesAutoCompleteBox.SelectedItem is not null)
         {
-            Settings.Default.SelectedRepository = this.RepositoriesAutoCompleteBox.Text;
+            App.Settings.SavedRepositoryName = this.RepositoriesAutoCompleteBox.Text ?? string.Empty;
         }
-
-        Settings.Default.Save();
 
         base.OnClosing(e);
     }

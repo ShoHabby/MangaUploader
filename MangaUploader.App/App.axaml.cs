@@ -6,8 +6,10 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
+using Config.Net;
 using HanumanInstitute.MvvmDialogs;
 using HanumanInstitute.MvvmDialogs.Avalonia;
+using MangaUploader.Core;
 using MangaUploader.Core.Services;
 using MangaUploader.Core.ViewModels;
 using MangaUploader.Services;
@@ -21,6 +23,72 @@ namespace MangaUploader;
 /// </summary>
 public sealed class App : Application
 {
+    #region Constants
+    /// <summary>
+    /// Application settings config file name
+    /// </summary>
+    private const string CONFIG_FILE = "appsettings.json";
+    #endregion
+
+    #region Static properties
+    /// <summary>
+    /// Application settings
+    /// </summary>
+    internal static IAppSettings Settings { get; private set; } = null!;
+    #endregion
+
+    #region Overrides
+    /// <inheritdoc />
+    public override void Initialize() => AvaloniaXamlLoader.Load(this);
+
+    /// <inheritdoc />
+    public override void OnFrameworkInitializationCompleted()
+    {
+        // Ensure proper app lifetime
+        if (this.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            base.OnFrameworkInitializationCompleted();
+            return;
+        }
+
+        // Cleanup Avalonia plugins
+        DisableAvaloniaDataAnnotationValidation();
+
+        // Create settings
+        Settings = new ConfigurationBuilder<IAppSettings>().UseJsonFile(CONFIG_FILE).Build();
+
+        // Create service collection
+        ServiceCollection services = new();
+
+        // Add dialog service
+        services.AddSingleton<IDialogService, DialogService>(provider =>
+        {
+            IViewLocator locator = new ViewLocator();
+            IDialogFactory dialogFactory = new DialogFactory();
+            return new DialogService(new DialogManager(locator, dialogFactory), provider.GetRequiredService);
+        });
+
+        // Add other services
+        services.AddSingleton<IGitHubService, GitHubService>();
+        services.AddSingleton<IClipboardService, ClipboardService>();
+        services.AddSingleton<ICubariService, CubariService>();
+        services.AddSingleton<IAppSettingsService, AppSettingsService>();
+
+        // Add ViewModels
+        services.AddTransient<MainWindowViewModel>();
+
+        // Start and inject
+        ServiceProvider provider = services.BuildServiceProvider();
+        desktop.MainWindow = new MainWindow
+        {
+            DataContext = provider.GetRequiredService<MainWindowViewModel>()
+        };
+
+        base.OnFrameworkInitializationCompleted();
+    }
+    #endregion
+
+    #region Static Methods
     /// <summary>
     /// Gets the current top level application
     /// </summary>
@@ -33,49 +101,6 @@ public sealed class App : Application
         _                                               => throw new InvalidOperationException("Current application lifetime does not support getting TopLevel")
     };
 
-    /// <inheritdoc />
-    public override void Initialize() => AvaloniaXamlLoader.Load(this);
-
-    /// <inheritdoc />
-    public override void OnFrameworkInitializationCompleted()
-    {
-        if (this.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
-        {
-            base.OnFrameworkInitializationCompleted();
-            return;
-        }
-
-        // Cleanup Avalonia plugins
-        DisableAvaloniaDataAnnotationValidation();
-
-        //Generate Dialog service
-        ServiceCollection services = new();
-        services.AddSingleton<IDialogService, DialogService>(provider =>
-        {
-            IViewLocator locator = new ViewLocator();
-            IDialogFactory dialogFactory = new DialogFactory();
-            return new DialogService(new DialogManager(locator, dialogFactory), provider.GetRequiredService);
-        });
-
-        // Add other services
-        services.AddSingleton<IGitHubService, GitHubService>();
-        services.AddSingleton<IClipboardService, ClipboardService>();
-        services.AddSingleton<ICubariService, CubariService>();
-        services.AddSingleton<ISavedDataService, SettingsSavedDataService>();
-
-        // Add VM transients
-        services.AddTransient<MainWindowViewModel>();
-
-        // Start and inject
-        ServiceProvider provider = services.BuildServiceProvider();
-        desktop.MainWindow = new MainWindow
-        {
-            DataContext = provider.GetRequiredService<MainWindowViewModel>()
-        };
-
-        base.OnFrameworkInitializationCompleted();
-    }
-
     /// <summary>
     /// Avoid duplicate validations from both Avalonia and the CommunityToolkit.
     /// </summary>
@@ -87,4 +112,5 @@ public sealed class App : Application
         // Remove each entry found
         Array.ForEach(toRemove, plugin => BindingPlugins.DataValidators.Remove(plugin));
     }
+    #endregion
 }
