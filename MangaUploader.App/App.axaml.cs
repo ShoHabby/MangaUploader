@@ -63,7 +63,7 @@ public sealed class App : Application
         // Add dialog service
         services.AddSingleton<IDialogService, DialogService>(provider =>
         {
-            IViewLocator locator = new ViewLocator();
+            IViewLocator locator         = new ViewLocator();
             IDialogFactory dialogFactory = new DialogFactory();
             return new DialogService(new DialogManager(locator, dialogFactory), provider.GetRequiredService);
         });
