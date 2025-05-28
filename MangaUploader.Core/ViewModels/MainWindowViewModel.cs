@@ -5,13 +5,17 @@ using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
-using JetBrains.Annotations;
 using MangaUploader.Core.Extensions.Logging;
 using MangaUploader.Core.Extensions.Tasks;
 using MangaUploader.Core.Models;
 using MangaUploader.Core.Models.Cubari;
 using MangaUploader.Core.Services;
+
+#if DEBUG
+using Avalonia.Controls;
+#endif
 
 namespace MangaUploader.Core.ViewModels;
 
@@ -35,19 +39,19 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <summary>
     /// Injected GitHub Service
     /// </summary>
-    private IGitHubService? GitHubService { get; }
+    private IGitHubService GitHubService { get; }
     /// <summary>
     /// Injected Clipboard service
     /// </summary>
-    private IClipboardService? ClipboardService { get; }
+    private IClipboardService ClipboardService { get; }
     /// <summary>
     /// Injected Cubari service
     /// </summary>
-    private ICubariService? CubariService { get; }
+    private ICubariService CubariService { get; }
     /// <summary>
     /// Injected Application Settings service
     /// </summary>
-    private IAppSettingsService? AppSettingsService { get; }
+    private IAppSettingsService AppSettingsService { get; }
     #endregion
 
     #region Observable Properties
@@ -93,35 +97,36 @@ public sealed partial class MainWindowViewModel : ViewModelBase
 
     #region Constructors
     /// <summary>
-    /// Default constructor for AppBuilder
+    /// ViewModel constructor
     /// </summary>
-    public MainWindowViewModel() : this(null, null, null, null) { }
-
-    /// <summary>
-    /// DI Constructor
-    /// </summary>
-    /// <param name="gitHubService">Injected GitHub Service</param>
-    /// <param name="clipboardService">Injected Clipboard service</param>
-    /// <param name="cubariService">Injected Cubari service</param>
-    /// <param name="appSettingsService">Injected Application Settings service</param>
-    [UsedImplicitly(ImplicitUseKindFlags.InstantiatedWithFixedConstructorSignature)]
-    public MainWindowViewModel(IGitHubService? gitHubService, IClipboardService? clipboardService, ICubariService? cubariService, IAppSettingsService? appSettingsService)
+    public MainWindowViewModel()
     {
-        this.GitHubService    = gitHubService;
-        this.ClipboardService = clipboardService;
-        this.CubariService    = cubariService;
-        this.AppSettingsService = appSettingsService;
-
-        if (this.GitHubService is not null)
+        #if DEBUG
+        if (Design.IsDesignMode)
         {
-            this.GitHubService.OnDeviceFlowCodeAvailable += OnDeviceFlowCodeAvailable;
+            // Suppress warnings
+            this.GitHubService      = null!;
+            this.ClipboardService   = null!;
+            this.CubariService      = null!;
+            this.AppSettingsService = null!;
+            return;
+        }
+        #endif
 
-            // If some credentials are saved, try connecting
-            if (this.GitHubService.HasSavedCredentials())
-            {
-                this.ConnectCommand.Execute(null);
-                this.ConnectCommand.NotifyCanExecuteChanged();
-            }
+        // Fetch services
+        this.GitHubService      = Ioc.Default.GetRequiredService<IGitHubService>();
+        this.ClipboardService   = Ioc.Default.GetRequiredService<IClipboardService>();
+        this.CubariService      = Ioc.Default.GetRequiredService<ICubariService>();
+        this.AppSettingsService = Ioc.Default.GetRequiredService<IAppSettingsService>();
+
+        // Subscribe to Oauth flow event
+        this.GitHubService.OnDeviceFlowCodeAvailable += OnDeviceFlowCodeAvailable;
+
+        // If some credentials are saved, try connecting
+        if (this.GitHubService.HasSavedCredentials())
+        {
+            this.ConnectCommand.Execute(null);
+            this.ConnectCommand.NotifyCanExecuteChanged();
         }
     }
 
@@ -130,10 +135,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// </summary>
     ~MainWindowViewModel()
     {
-        if (this.GitHubService is not null)
-        {
-            this.GitHubService.OnDeviceFlowCodeAvailable -= OnDeviceFlowCodeAvailable;
-        }
+        #if DEBUG
+        if (Design.IsDesignMode) return;
+        #endif
+
+        this.GitHubService.OnDeviceFlowCodeAvailable -= OnDeviceFlowCodeAvailable;
     }
     #endregion
 
@@ -144,7 +150,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task Connect()
     {
-        if (this.GitHubService is null) return;
+        #if DEBUG
+        if (Design.IsDesignMode) return;
+        #endif
 
         // If authenticated, disconnect instead
         if (this.GitHubService.IsAuthenticated)
@@ -175,7 +183,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private void TestSerialization()
     {
-        if (this.CubariService is null) return;
+        #if DEBUG
+        if (Design.IsDesignMode) return;
+        #endif
 
         string data = File.ReadAllText("Testing/Test.json");
         Manga? manga = this.CubariService.DeserializeManga(data);
@@ -193,7 +203,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(HasSelectedRepository))]
     private async Task FetchSelectedRepo()
     {
-        if (this.GitHubService is null) return;
+        #if DEBUG
+        if (Design.IsDesignMode) return;
+        #endif
 
         this.IsLoading = true;
         ImmutableArray<MangaFileInfo> mangas = await this.GitHubService.FetchRepoMangaContents(this.SelectedRepository!.Value.ID);
@@ -211,13 +223,11 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// </summary>
     private async Task FetchRepositories()
     {
-        if (this.GitHubService is null) return;
-
         this.IsLoading    = true;
         this.Repositories = await this.GitHubService.FetchPublicRepos() ?? ImmutableArray<RepositoryInfo>.Empty;
         this.IsLoading    = false;
 
-        if (!string.IsNullOrEmpty(this.AppSettingsService?.Settings.SavedRepositoryName))
+        if (!string.IsNullOrEmpty(this.AppSettingsService.Settings.SavedRepositoryName))
         {
             this.SelectedRepository = this.Repositories.FirstOrDefault(r => r.Name == this.AppSettingsService.Settings.SavedRepositoryName);
             if (this.SelectedRepository is not null)
@@ -238,7 +248,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private void OnDeviceFlowCodeAvailable(string userCode, TimeSpan validFor)
     {
         this.DeviceFlowCode = userCode;
-        this.ClipboardService?.CopyTextToClipboard(userCode).Forget();
+        this.ClipboardService.CopyTextToClipboard(userCode).Forget();
     }
     #endregion
 }

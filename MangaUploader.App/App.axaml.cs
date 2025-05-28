@@ -6,6 +6,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using Avalonia.VisualTree;
+using CommunityToolkit.Mvvm.DependencyInjection;
 using Config.Net;
 using HanumanInstitute.MvvmDialogs;
 using HanumanInstitute.MvvmDialogs.Avalonia;
@@ -78,10 +79,10 @@ public sealed class App : Application
         services.AddTransient<MainWindowViewModel>();
 
         // Start and inject
-        ServiceProvider provider = services.BuildServiceProvider();
+        Ioc.Default.ConfigureServices(services.BuildServiceProvider());
         desktop.MainWindow = new MainWindow
         {
-            DataContext = provider.GetRequiredService<MainWindowViewModel>()
+            DataContext = Ioc.Default.GetRequiredService<MainWindowViewModel>()
         };
 
         base.OnFrameworkInitializationCompleted();
