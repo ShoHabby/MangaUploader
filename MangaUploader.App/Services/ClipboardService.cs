@@ -1,5 +1,4 @@
-﻿using System.Threading.Tasks;
-using MangaUploader.Core.Services;
+﻿using MangaUploader.Core.Services;
 
 namespace MangaUploader.Services;
 

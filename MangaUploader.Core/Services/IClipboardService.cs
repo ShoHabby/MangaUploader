@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace MangaUploader.Core.Services;
+﻿namespace MangaUploader.Core.Services;
 
 /// <summary>
 /// Device clipboard service

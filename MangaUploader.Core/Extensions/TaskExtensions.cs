@@ -1,4 +1,4 @@
-﻿using System.Threading.Tasks;
+﻿
 
 // ReSharper disable once CheckNamespace
 namespace MangaUploader.Core.Extensions.Tasks;
