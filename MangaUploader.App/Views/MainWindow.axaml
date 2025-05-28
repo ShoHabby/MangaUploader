@@ -3,6 +3,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:vm="clr-namespace:MangaUploader.Core.ViewModels;assembly=MangaUploader.Core"
+        xmlns:m="clr-namespace:MangaUploader.Core.Models;assembly=MangaUploader.Core"
         xmlns:b="clr-namespace:MangaUploader.Core.Behaviours;assembly=MangaUploader.Core"
         xmlns:i="clr-namespace:Avalonia.Xaml.Interactivity;assembly=Xaml.Behaviors.Interactivity"
         xmlns:ail="clr-namespace:AsyncImageLoader;assembly=AsyncImageLoader.Avalonia"
@@ -51,9 +52,9 @@
                                 </MultiBinding>
                             </StackPanel.IsEnabled>
                             <Label Content="Repositories" Target="RepositoriesAutoCompleteBox" />
-                            <AutoCompleteBox Name="RepositoriesAutoCompleteBox" ItemsSource="{Binding Repositories}"
-                                             FilterMode="ContainsOrdinal" SelectedItem="{Binding SelectedRepository}"
-                                             Padding="8" VerticalAlignment="Center">
+                            <AutoCompleteBox Name="RepositoriesAutoCompleteBox" Padding="8" VerticalAlignment="Center"
+                                             ItemsSource="{Binding Repositories}" ValueMemberBinding="{Binding Name, DataType=m:RepositoryInfo}"
+                                             FilterMode="ContainsOrdinal" SelectedItem="{Binding SelectedRepository}">
                                 <i:Interaction.Behaviors>
                                     <b:DropdownItemsOnlyBehaviour/>
                                 </i:Interaction.Behaviors>
