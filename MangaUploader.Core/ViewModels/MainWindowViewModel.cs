@@ -154,8 +154,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         if (this.GitHubService.IsAuthenticated)
         {
             this.GitHubService.Disconnect();
-            this.User            = UserInfo.Default;
-            this.IsAuthenticated = false;
+            this.User               = UserInfo.Default;
+            this.SelectedRepository = null;
+            this.IsAuthenticated    = false;
             return;
         }
 

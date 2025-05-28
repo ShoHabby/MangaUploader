@@ -60,12 +60,11 @@ public sealed class App : Application
         ServiceCollection services = new();
 
         // Add dialog service
-        services.AddSingleton<IDialogService, DialogService>(provider =>
-        {
-            IViewLocator locator         = new ViewLocator();
-            IDialogFactory dialogFactory = new DialogFactory();
-            return new DialogService(new DialogManager(locator, dialogFactory), provider.GetRequiredService);
-        });
+        IViewLocator viewLocator     = new ViewLocator();
+        IDialogFactory dialogFactory = new DialogFactory();
+        DialogManager dialogManager  = new(viewLocator, dialogFactory);
+        DialogService dialogService  = new(dialogManager, t => Ioc.Default.GetService(t));
+        services.AddSingleton<IDialogService>(dialogService);
 
         // Add other services
         services.AddSingleton<IGitHubService, GitHubService>();
@@ -96,7 +95,7 @@ public sealed class App : Application
     public static TopLevel GetTopLevel() => Current!.ApplicationLifetime switch
     {
         IClassicDesktopStyleApplicationLifetime desktop => desktop.MainWindow!,
-        ISingleViewApplicationLifetime viewApp          => (TopLevel)viewApp.MainView!.GetVisualRoot()!,
+        ISingleViewApplicationLifetime viewApp          => viewApp.MainView?.GetVisualRoot() as TopLevel ?? throw new InvalidOperationException("Unable to correctly get TopLevel from current lifetime"),
         _                                               => throw new InvalidOperationException("Current application lifetime does not support getting TopLevel")
     };
 
