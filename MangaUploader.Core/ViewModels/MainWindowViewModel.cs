@@ -47,7 +47,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <summary>
     /// Injected Application Settings service
     /// </summary>
-    private IAppSettingsService AppSettingsService { get; }
+    private IAppSettings AppSettingsService { get; }
     #endregion
 
     #region Observable Properties
@@ -113,7 +113,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         this.GitHubService      = Ioc.Default.GetRequiredService<IGitHubService>();
         this.ClipboardService   = Ioc.Default.GetRequiredService<IClipboardService>();
         this.CubariService      = Ioc.Default.GetRequiredService<ICubariService>();
-        this.AppSettingsService = Ioc.Default.GetRequiredService<IAppSettingsService>();
+        this.AppSettingsService = Ioc.Default.GetRequiredService<IAppSettings>();
 
         // Subscribe to Oauth flow event
         this.GitHubService.OnDeviceFlowCodeAvailable += OnDeviceFlowCodeAvailable;
@@ -224,9 +224,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         this.Repositories = await this.GitHubService.FetchPublicRepos() ?? ImmutableArray<RepositoryInfo>.Empty;
         this.IsLoading    = false;
 
-        if (!string.IsNullOrEmpty(this.AppSettingsService.Settings.SavedRepositoryName))
+        if (!string.IsNullOrEmpty(this.AppSettingsService.SavedRepositoryName))
         {
-            this.SelectedRepository = this.Repositories.FirstOrDefault(r => r.Name == this.AppSettingsService.Settings.SavedRepositoryName);
+            this.SelectedRepository = this.Repositories.FirstOrDefault(r => r.Name == this.AppSettingsService.SavedRepositoryName);
             if (this.SelectedRepository is not null)
             {
                 this.FetchSelectedRepoCommand.Execute(null);

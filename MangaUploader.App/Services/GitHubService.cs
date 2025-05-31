@@ -17,7 +17,7 @@ namespace MangaUploader.Services;
 /// GitHub Service implementation
 /// </summary>
 /// <param name="cubariService">Cubari payload service</param>
-public sealed class GitHubService(ICubariService cubariService) : IGitHubService
+internal sealed class GitHubService(ICubariService cubariService) : IGitHubService
 {
     /// <summary>
     /// Where the credentials where fetched from

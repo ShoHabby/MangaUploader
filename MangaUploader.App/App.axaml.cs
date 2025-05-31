@@ -8,6 +8,7 @@ using CommunityToolkit.Mvvm.DependencyInjection;
 using Config.Net;
 using HanumanInstitute.MvvmDialogs;
 using HanumanInstitute.MvvmDialogs.Avalonia;
+using JetBrains.Annotations;
 using MangaUploader.Core;
 using MangaUploader.Core.Services;
 using MangaUploader.Core.ViewModels;
@@ -20,6 +21,7 @@ namespace MangaUploader;
 /// <summary>
 /// Application root
 /// </summary>
+[UsedImplicitly(ImplicitUseKindFlags.InstantiatedWithFixedConstructorSignature)]
 public sealed class App : Application
 {
     #region Constants
@@ -33,12 +35,18 @@ public sealed class App : Application
     /// <summary>
     /// Application settings
     /// </summary>
-    internal static IAppSettings Settings { get; private set; } = null!;
+    internal static IAppSettings Settings { get; private set; } = new ConfigurationBuilder<IAppSettings>().UseJsonFile(CONFIG_FILE).Build();
     #endregion
 
     #region Overrides
     /// <inheritdoc />
-    public override void Initialize() => AvaloniaXamlLoader.Load(this);
+    public override void Initialize()
+    {
+        // Create settings
+        Settings = new ConfigurationBuilder<IAppSettings>().UseJsonFile(CONFIG_FILE).Build();
+        // Initialize app
+        AvaloniaXamlLoader.Load(this);
+    }
 
     /// <inheritdoc />
     public override void OnFrameworkInitializationCompleted()
@@ -53,24 +61,22 @@ public sealed class App : Application
         // Cleanup Avalonia plugins
         DisableAvaloniaDataAnnotationValidation();
 
-        // Create settings
-        Settings = new ConfigurationBuilder<IAppSettings>().UseJsonFile(CONFIG_FILE).Build();
-
         // Create service collection
         ServiceCollection services = new();
 
         // Add dialog service
-        IViewLocator viewLocator     = new ViewLocator();
-        IDialogFactory dialogFactory = new DialogFactory();
-        DialogManager dialogManager  = new(viewLocator, dialogFactory);
-        DialogService dialogService  = new(dialogManager, t => Ioc.Default.GetService(t));
-        services.AddSingleton<IDialogService>(dialogService);
+        services.AddSingleton<IDialogService>(provider =>
+        {
+            IViewLocator viewLocator     = new ViewLocator();
+            IDialogFactory dialogFactory = new DialogFactory();
+            return new DialogService(new DialogManager(viewLocator, dialogFactory), provider.GetService);
+        });
 
         // Add other services
         services.AddSingleton<IGitHubService, GitHubService>();
         services.AddSingleton<IClipboardService, ClipboardService>();
         services.AddSingleton<ICubariService, CubariService>();
-        services.AddSingleton<IAppSettingsService, AppSettingsService>();
+        services.AddSingleton<IAppSettings>(_ => Settings);
 
         // Add ViewModels
         services.AddTransient<MainWindowViewModel>();

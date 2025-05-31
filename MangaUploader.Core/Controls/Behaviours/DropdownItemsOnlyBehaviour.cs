@@ -4,7 +4,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using Avalonia.Xaml.Interactivity;
 
-namespace MangaUploader.Core.Behaviours;
+namespace MangaUploader.Core.Controls.Behaviours;
 
 /// <summary>
 /// Behaviour that restricts the AutoCompleteBox to only select items from it's dropdown menu

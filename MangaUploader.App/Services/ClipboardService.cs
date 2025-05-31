@@ -5,7 +5,7 @@ namespace MangaUploader.Services;
 /// <summary>
 /// Desktop clipboard service
 /// </summary>
-public sealed class ClipboardService : IClipboardService
+internal sealed class ClipboardService : IClipboardService
 {
     #region Methods
     /// <inheritdoc />
