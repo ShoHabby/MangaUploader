@@ -178,20 +178,20 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// Json serialization/deserialization test
     /// </summary>
     [RelayCommand]
-    private void TestSerialization()
+    private async Task TestSerialization()
     {
         #if DEBUG
         if (Design.IsDesignMode) return;
         #endif
 
-        string data = File.ReadAllText("Testing/Test.json");
-        Manga? manga = this.CubariService.DeserializeManga(data);
+        string data = await File.ReadAllTextAsync("Testing/Test.json");
+        Manga? manga = await this.CubariService.DeserializeManga(data);
         if (manga is null) return;
 
-        string? newData = this.CubariService.SerializeManga(manga);
+        string? newData = await this.CubariService.SerializeManga(manga);
         if (newData is null) return;
 
-        File.WriteAllText("Testing/SerializedTest.json", newData);
+        await File.WriteAllTextAsync("Testing/SerializedTest.json", newData);
     }
 
     /// <summary>

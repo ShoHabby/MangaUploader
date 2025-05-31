@@ -57,6 +57,7 @@
         <PackageReference Include="HanumanInstitute.MvvmDialogs.Avalonia" Version="2.1.0" />
         <PackageReference Include="LoadingIndicators.Avalonia" Version="11.0.11.1" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.5" />
+        <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="3.0.1" />
         <PackageReference Include="Octokit" Version="14.0.0" />
         <PackageReference Include="Xaml.Behaviors.Interactivity" Version="11.3.0.7" />
     </ItemGroup>

@@ -1,9 +1,11 @@
-﻿using System.Text.Encodings.Web;
+﻿using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using MangaUploader.Core.Json;
 using MangaUploader.Core.Models.Cubari;
 using MangaUploader.Core.Services;
+using Microsoft.IO;
 
 namespace MangaUploader.Services;
 
@@ -12,6 +14,13 @@ namespace MangaUploader.Services;
 /// </summary>
 internal sealed class CubariService : ICubariService
 {
+    #region Constants
+    /// <summary>
+    /// Memory stream manager
+    /// </summary>
+    private static RecyclableMemoryStreamManager StreamManager { get; } = new();
+    #endregion
+
     #region Properties
     /// <summary>
     /// Json serializer options
@@ -28,11 +37,16 @@ internal sealed class CubariService : ICubariService
 
     #region Methods
     /// <inheritdoc />
-    public Manga? DeserializeManga(string data)
+    public async Task<Manga?> DeserializeManga(string data)
     {
         try
         {
-            return JsonSerializer.Deserialize<Manga>(data, this.Options);
+            await using RecyclableMemoryStream deserializeStream = StreamManager.GetStream(nameof(DeserializeManga), Encoding.UTF8.GetByteCount(data));
+            await using StreamWriter writer = new(deserializeStream, Encoding.UTF8);
+            await writer.WriteAsync(data);
+            await writer.FlushAsync();
+            deserializeStream.Seek(0L, SeekOrigin.Begin);
+            return await JsonSerializer.DeserializeAsync<Manga>(deserializeStream, this.Options);
         }
         catch
         {
@@ -41,11 +55,15 @@ internal sealed class CubariService : ICubariService
     }
 
     /// <inheritdoc />
-    public string? SerializeManga(Manga manga)
+    public async Task<string?> SerializeManga(Manga manga)
     {
         try
         {
-            return JsonSerializer.Serialize(manga, this.Options);
+            await using RecyclableMemoryStream serializeStream = StreamManager.GetStream(nameof(SerializeManga), 1024L);
+            await JsonSerializer.SerializeAsync(serializeStream, manga, this.Options);
+            using StreamReader reader = new(serializeStream, Encoding.UTF8);
+            serializeStream.Seek(0L, SeekOrigin.Begin);
+            return await reader.ReadToEndAsync();
         }
         catch
         {

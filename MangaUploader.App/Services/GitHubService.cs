@@ -244,7 +244,7 @@ internal sealed class GitHubService(ICubariService cubariService) : IGitHubServi
 
             // Try converting to manga payload, add if successful
             RepositoryContent file = contents[0];
-            Manga? manga = this.CubariService.DeserializeManga(file.Content);
+            Manga? manga = await this.CubariService.DeserializeManga(file.Content);
             if (manga is not null)
             {
                 mangaContents.Add(new MangaFileInfo(file.Path, file.Sha, repositoryId, manga));
