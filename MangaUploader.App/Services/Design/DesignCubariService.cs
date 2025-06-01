@@ -7,7 +7,7 @@ namespace MangaUploader.Services.Design;
 /// <summary>
 /// Design time Cubari service
 /// </summary>
-public class DesignCubariService : ICubariService
+internal sealed class DesignCubariService : ICubariService
 {
     #region Methods
     /// <inheritdoc />

@@ -1,5 +1,6 @@
 ﻿using System.Collections.Immutable;
 using System.ComponentModel;
+using System.Diagnostics;
 using GitCredentialManager;
 using MangaUploader.Core.Extensions.Collections;
 using MangaUploader.Core.Extensions.Logging;
@@ -119,7 +120,7 @@ internal sealed class GitHubService(ICubariService cubariService) : IGitHubServi
 
         // Authentication completed
         this.IsAuthenticated = true;
-        return new UserInfo(user.Login, user.Email, user.AvatarUrl);
+        return new UserInfo(user.Login, user.Email, user.Id, user.AvatarUrl);
     }
 
     /// <summary>

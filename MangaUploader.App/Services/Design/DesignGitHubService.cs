@@ -9,7 +9,7 @@ namespace MangaUploader.Services.Design;
 /// <summary>
 /// Design time GitHub service
 /// </summary>
-public class DesignGitHubService : IGitHubService
+internal sealed class DesignGitHubService : IGitHubService
 {
     #region Events
     /// <inheritdoc />
@@ -31,7 +31,7 @@ public class DesignGitHubService : IGitHubService
     public Task<UserInfo?> Authenticate()
     {
         this.IsAuthenticated = true;
-        return Task.FromResult<UserInfo?>(new UserInfo("Sho Habby", "mangauploader@shohabby.ca", "/Assets/maribshohabby.ico"));
+        return Task.FromResult<UserInfo?>(new UserInfo("Sho Habby", "mangauploader@shohabby.ca", 0L, "/Assets/maribshohabby.ico"));
     }
 
     /// <inheritdoc />

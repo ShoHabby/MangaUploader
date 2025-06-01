@@ -7,6 +7,7 @@ using MangaUploader.Core.Extensions.Tasks;
 using MangaUploader.Core.Models;
 using MangaUploader.Core.Models.Cubari;
 using MangaUploader.Core.Services;
+using MangaUploader.Core.Settings;
 
 namespace MangaUploader.Core.ViewModels;
 
@@ -192,9 +193,9 @@ public sealed partial class MainWindowViewModel : ViewModelBase
         this.Repositories = await this.GitHubService.FetchPublicRepos() ?? ImmutableArray<RepositoryInfo>.Empty;
         this.IsLoading    = false;
 
-        if (!string.IsNullOrEmpty(this.AppSettingsService.SavedRepositoryName))
+        if (this.AppSettingsService.SavedRepositoryID is not null)
         {
-            this.SelectedRepository = this.Repositories.FirstOrDefault(r => r.Name == this.AppSettingsService.SavedRepositoryName);
+            this.SelectedRepository = this.Repositories.FirstOrDefault(r => r.ID == this.AppSettingsService.SavedRepositoryID.Value);
             if (this.SelectedRepository is not null)
             {
                 this.FetchSelectedRepoCommand.Execute(null);

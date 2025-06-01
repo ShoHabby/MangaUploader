@@ -28,7 +28,7 @@
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <PlatformTarget>AnyCPU</PlatformTarget>
-        <DefineConstants>TRACE,DEBUG</DefineConstants>
+        <DefineConstants>TRACE</DefineConstants>
     </PropertyGroup>
 
     <PropertyGroup>

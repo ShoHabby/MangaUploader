@@ -11,6 +11,8 @@ using HanumanInstitute.MvvmDialogs;
 using HanumanInstitute.MvvmDialogs.Avalonia;
 using MangaUploader.Core;
 using MangaUploader.Core.Services;
+using MangaUploader.Core.Settings;
+using MangaUploader.Core.Settings.Parsers;
 using MangaUploader.Core.ViewModels;
 using MangaUploader.Services;
 using MangaUploader.Views;
@@ -34,7 +36,9 @@ public sealed class App : Application
     /// <summary>
     /// Application settings
     /// </summary>
-    internal static IAppSettings Settings { get; } = new ConfigurationBuilder<IAppSettings>().UseJsonFile(CONFIG_FILE).Build();
+    internal static IAppSettings Settings { get; } = new ConfigurationBuilder<IAppSettings>().UseJsonFile(CONFIG_FILE)
+                                                                                             .UseTypeParser(new ListParser<long>())
+                                                                                             .Build();
     #endregion
 
     #region Overrides

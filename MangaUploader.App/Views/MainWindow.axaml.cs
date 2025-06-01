@@ -1,4 +1,5 @@
 using Avalonia.Controls;
+using MangaUploader.Core.Models;
 
 namespace MangaUploader.Views;
 
@@ -27,14 +28,9 @@ public sealed partial class MainWindow : Window
     /// <inheritdoc />
     protected override void OnClosing(WindowClosingEventArgs e)
     {
-        App.Settings.WindowWidth  = (int)Math.Round(this.Width);
-        App.Settings.WindowHeight = (int)Math.Round(this.Height);
-
-        if (this.RepositoriesAutoCompleteBox.SelectedItem is not null)
-        {
-            App.Settings.SavedRepositoryName = this.RepositoriesAutoCompleteBox.Text ?? string.Empty;
-        }
-
+        App.Settings.WindowWidth       = (int)Math.Round(this.Width);
+        App.Settings.WindowHeight      = (int)Math.Round(this.Height);
+        App.Settings.SavedRepositoryID = this.RepositoriesAutoCompleteBox.SelectedItem is RepositoryInfo repository ? repository.ID : null;
         base.OnClosing(e);
     }
     #endregion
