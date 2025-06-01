@@ -53,6 +53,8 @@ public sealed partial class ProxyEntry : Entry
     /// <returns>The Uri string representation of this proxy entry</returns>
     public string ToUriString()
     {
+        if (this.Type is ProxyType.None) return string.Empty;
+
         string type = FastEnum.ToString<ProxyType, ProxyTypeBooster>(this.Type).ToLowerInvariant();
         return this.Type is not ProxyType.None ? $"/proxy/api/{type}/chapter/{this.ID}" : string.Empty;
     }

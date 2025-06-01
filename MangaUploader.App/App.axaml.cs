@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Controls.ApplicationLifetimes;
@@ -8,7 +9,6 @@ using CommunityToolkit.Mvvm.DependencyInjection;
 using Config.Net;
 using HanumanInstitute.MvvmDialogs;
 using HanumanInstitute.MvvmDialogs.Avalonia;
-using JetBrains.Annotations;
 using MangaUploader.Core;
 using MangaUploader.Core.Services;
 using MangaUploader.Core.ViewModels;
@@ -21,7 +21,6 @@ namespace MangaUploader;
 /// <summary>
 /// Application root
 /// </summary>
-[UsedImplicitly(ImplicitUseKindFlags.InstantiatedWithFixedConstructorSignature)]
 public sealed class App : Application
 {
     #region Constants
@@ -35,58 +34,51 @@ public sealed class App : Application
     /// <summary>
     /// Application settings
     /// </summary>
-    internal static IAppSettings Settings { get; private set; } = new ConfigurationBuilder<IAppSettings>().UseJsonFile(CONFIG_FILE).Build();
+    internal static IAppSettings Settings { get; } = new ConfigurationBuilder<IAppSettings>().UseJsonFile(CONFIG_FILE).Build();
     #endregion
 
     #region Overrides
     /// <inheritdoc />
-    public override void Initialize()
-    {
-        // Create settings
-        Settings = new ConfigurationBuilder<IAppSettings>().UseJsonFile(CONFIG_FILE).Build();
-        // Initialize app
-        AvaloniaXamlLoader.Load(this);
-    }
+    public override void Initialize() => AvaloniaXamlLoader.Load(this);
 
     /// <inheritdoc />
     public override void OnFrameworkInitializationCompleted()
     {
-        // Ensure proper app lifetime
-        if (this.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
-        {
-            base.OnFrameworkInitializationCompleted();
-            return;
-        }
-
-        // Cleanup Avalonia plugins
-        DisableAvaloniaDataAnnotationValidation();
-
         // Create service collection
         ServiceCollection services = new();
 
-        // Add dialog service
-        services.AddSingleton<IDialogService>(provider =>
+        // Add services
+        #if DEBUG
+        if (Design.IsDesignMode)
         {
-            IViewLocator viewLocator     = new ViewLocator();
-            IDialogFactory dialogFactory = new DialogFactory();
-            return new DialogService(new DialogManager(viewLocator, dialogFactory), provider.GetService);
-        });
-
-        // Add other services
-        services.AddSingleton<IGitHubService, GitHubService>();
-        services.AddSingleton<IClipboardService, ClipboardService>();
-        services.AddSingleton<ICubariService, CubariService>();
-        services.AddSingleton<IAppSettings>(_ => Settings);
+            AddDesignServices(services);
+        }
+        else
+        {
+            AddRuntimeServices(services);
+        }
+        #else
+        AddRuntimeServices(services);
+        #endif
 
         // Add ViewModels
         services.AddTransient<MainWindowViewModel>();
 
-        // Start and inject
+        // Setup DI container
         Ioc.Default.ConfigureServices(services.BuildServiceProvider());
-        desktop.MainWindow = new MainWindow
+
+        // Check for startup
+        if (this.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
         {
-            DataContext = Ioc.Default.GetRequiredService<MainWindowViewModel>()
-        };
+            // Cleanup Avalonia plugins
+            DisableAvaloniaDataAnnotationValidation();
+
+            // Startup
+            desktop.MainWindow = new MainWindow
+            {
+                DataContext = Ioc.Default.GetRequiredService<MainWindowViewModel>()
+            };
+        }
 
         base.OnFrameworkInitializationCompleted();
     }
@@ -115,6 +107,41 @@ public sealed class App : Application
         DataAnnotationsValidationPlugin[] toRemove = BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
         // Remove each entry found
         Array.ForEach(toRemove, plugin => BindingPlugins.DataValidators.Remove(plugin));
+    }
+
+    /// <summary>
+    /// Adds the runtime services to the DI container
+    /// </summary>
+    /// <param name="services">Current services collection</param>
+    private static void AddRuntimeServices(ServiceCollection services)
+    {
+        // Add dialog service
+        services.AddSingleton<IDialogService>(provider =>
+        {
+            IViewLocator viewLocator     = new ViewLocator();
+            IDialogFactory dialogFactory = new DialogFactory();
+            return new DialogService(new DialogManager(viewLocator, dialogFactory), provider.GetService);
+        });
+
+        // Add other services
+        services.AddSingleton<IGitHubService, GitHubService>();
+        services.AddSingleton<IClipboardService, ClipboardService>();
+        services.AddSingleton<ICubariService, CubariService>();
+        services.AddSingleton<IAppSettings>(_ => Settings);
+    }
+
+    /// <summary>
+    /// Adds the design time services to the DI container
+    /// </summary>
+    /// <param name="services">Current services collection</param>
+    [Conditional("DEBUG")]
+    private static void AddDesignServices(ServiceCollection services)
+    {
+        // Add other services
+        services.AddSingleton<IGitHubService, MangaUploader.Services.Design.DesignGitHubService>();
+        services.AddSingleton<IClipboardService, MangaUploader.Services.Design.DesignClipboardService>();
+        services.AddSingleton<ICubariService, MangaUploader.Services.Design.DesignCubariService>();
+        services.AddSingleton<IAppSettings>(_ => new ConfigurationBuilder<IAppSettings>().Build());
     }
     #endregion
 }

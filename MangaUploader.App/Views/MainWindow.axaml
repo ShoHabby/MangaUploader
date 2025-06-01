@@ -13,11 +13,8 @@
         x:Class="MangaUploader.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Icon="/Assets/maribshohabby.ico"
-        Title="Manga Uploader">
-
-    <Design.DataContext>
-        <vm:MainWindowViewModel />
-    </Design.DataContext>
+        Title="Manga Uploader"
+        Design.DataContext="{x:Static vm:DesignData.MainWindowViewModel}">
 
     <TabControl>
         <TabItem Header="GitHub" Padding="5">

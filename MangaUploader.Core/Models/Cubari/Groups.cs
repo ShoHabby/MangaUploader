@@ -22,6 +22,6 @@ public sealed class Groups
     /// Collection of groups who participated in the chapter entry
     /// </summary>
     [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
-    public List<string> Names { get; } = [];
+    public List<string> Names { get; init; } = [];
     #endregion
 }

@@ -1,17 +1,12 @@
 ﻿using System.Collections.Immutable;
 using Avalonia;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
 using MangaUploader.Core.Extensions.Logging;
 using MangaUploader.Core.Extensions.Tasks;
 using MangaUploader.Core.Models;
 using MangaUploader.Core.Models.Cubari;
 using MangaUploader.Core.Services;
-
-#if DEBUG
-using Avalonia.Controls;
-#endif
 
 namespace MangaUploader.Core.ViewModels;
 
@@ -95,25 +90,13 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <summary>
     /// ViewModel constructor
     /// </summary>
-    public MainWindowViewModel()
+    public MainWindowViewModel(IGitHubService gitHubService, IClipboardService clipboardService, ICubariService cubariService, IAppSettings appSettings)
     {
-        #if DEBUG
-        if (Design.IsDesignMode)
-        {
-            // Suppress warnings
-            this.GitHubService      = null!;
-            this.ClipboardService   = null!;
-            this.CubariService      = null!;
-            this.AppSettingsService = null!;
-            return;
-        }
-        #endif
-
         // Fetch services
-        this.GitHubService      = Ioc.Default.GetRequiredService<IGitHubService>();
-        this.ClipboardService   = Ioc.Default.GetRequiredService<IClipboardService>();
-        this.CubariService      = Ioc.Default.GetRequiredService<ICubariService>();
-        this.AppSettingsService = Ioc.Default.GetRequiredService<IAppSettings>();
+        this.GitHubService      = gitHubService;
+        this.ClipboardService   = clipboardService;
+        this.CubariService      = cubariService;
+        this.AppSettingsService = appSettings;
 
         // Subscribe to Oauth flow event
         this.GitHubService.OnDeviceFlowCodeAvailable += OnDeviceFlowCodeAvailable;
@@ -129,14 +112,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     /// <summary>
     /// Destructor, clears event bindings
     /// </summary>
-    ~MainWindowViewModel()
-    {
-        #if DEBUG
-        if (Design.IsDesignMode) return;
-        #endif
-
-        this.GitHubService.OnDeviceFlowCodeAvailable -= OnDeviceFlowCodeAvailable;
-    }
+    ~MainWindowViewModel() => this.GitHubService.OnDeviceFlowCodeAvailable -= OnDeviceFlowCodeAvailable;
     #endregion
 
     #region Commands
@@ -146,10 +122,6 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [RelayCommand]
     private async Task Connect()
     {
-        #if DEBUG
-        if (Design.IsDesignMode) return;
-        #endif
-
         // If authenticated, disconnect instead
         if (this.GitHubService.IsAuthenticated)
         {
@@ -181,7 +153,7 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     private async Task TestSerialization()
     {
         #if DEBUG
-        if (Design.IsDesignMode) return;
+        if (Avalonia.Controls.Design.IsDesignMode) return;
         #endif
 
         string data = await File.ReadAllTextAsync("Testing/Test.json");
@@ -200,10 +172,6 @@ public sealed partial class MainWindowViewModel : ViewModelBase
     [RelayCommand(CanExecute = nameof(HasSelectedRepository))]
     private async Task FetchSelectedRepo()
     {
-        #if DEBUG
-        if (Design.IsDesignMode) return;
-        #endif
-
         this.IsLoading = true;
         ImmutableArray<MangaFileInfo> mangas = await this.GitHubService.FetchRepoMangaContents(this.SelectedRepository!.Value.ID);
         foreach (MangaFileInfo manga in mangas)
