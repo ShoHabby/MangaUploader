@@ -15,4 +15,12 @@ public readonly record struct UserInfo(string Login, string Email, long ID, stri
     /// </summary>
     public static UserInfo Default { get; } = new("Please log in...", string.Empty, 0L, "/Assets/maribshohabby.ico");
     #endregion
+
+    #region Methods
+    /// <summary>
+    /// User display string
+    /// </summary>
+    /// <returns>The display string for this User</returns>
+    public override string ToString() => this.Login;
+    #endregion
 }
