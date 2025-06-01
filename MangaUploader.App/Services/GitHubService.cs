@@ -1,6 +1,5 @@
 ﻿using System.Collections.Immutable;
 using System.ComponentModel;
-using System.Diagnostics;
 using GitCredentialManager;
 using MangaUploader.Core.Extensions.Collections;
 using MangaUploader.Core.Extensions.Logging;

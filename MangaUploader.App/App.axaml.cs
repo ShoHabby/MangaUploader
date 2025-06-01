@@ -9,7 +9,6 @@ using CommunityToolkit.Mvvm.DependencyInjection;
 using Config.Net;
 using HanumanInstitute.MvvmDialogs;
 using HanumanInstitute.MvvmDialogs.Avalonia;
-using MangaUploader.Core;
 using MangaUploader.Core.Services;
 using MangaUploader.Core.Settings;
 using MangaUploader.Core.Settings.Parsers;
@@ -107,10 +106,14 @@ public sealed class App : Application
     /// <remarks>More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins</remarks>
     private static void DisableAvaloniaDataAnnotationValidation()
     {
-        // Get an array of plugins to remove
-        DataAnnotationsValidationPlugin[] toRemove = BindingPlugins.DataValidators.OfType<DataAnnotationsValidationPlugin>().ToArray();
-        // Remove each entry found
-        Array.ForEach(toRemove, plugin => BindingPlugins.DataValidators.Remove(plugin));
+        IList<IDataValidationPlugin> plugins = BindingPlugins.DataValidators;
+        for (int i = plugins.Count - 1; i >= 0; i--)
+        {
+            if (plugins[i] is DataAnnotationsValidationPlugin)
+            {
+                plugins.RemoveAt(i);
+            }
+        }
     }
 
     /// <summary>
@@ -145,7 +148,7 @@ public sealed class App : Application
         services.AddSingleton<IGitHubService, MangaUploader.Services.Design.DesignGitHubService>();
         services.AddSingleton<IClipboardService, MangaUploader.Services.Design.DesignClipboardService>();
         services.AddSingleton<ICubariService, MangaUploader.Services.Design.DesignCubariService>();
-        services.AddSingleton<IAppSettings>(_ => new ConfigurationBuilder<IAppSettings>().Build());
+        services.AddSingleton<IAppSettings>(_ => new ConfigurationBuilder<IAppSettings>().UseTypeParser(new ListParser<long>()).Build());
     }
     #endregion
 }
